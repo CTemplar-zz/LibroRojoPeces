@@ -18,7 +18,7 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 <main id="portal" hidden><header><div><div class="kicker">Biodiversidad de Bolivia</div><h1>Libro Rojo de Peces</h1></div><button id="logout">Cerrar sesión</button></header>
 <div class="layout">
 <aside class="left" aria-label="Catálogo de especies"><div class="left-head"><h2>Especies</h2><small id="species-count"></small><input id="search" type="search" placeholder="Buscar especie o familia" aria-label="Buscar especie o familia"><select id="category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select></div><div id="species-list"></div></aside>
-<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="light">Cartográfico</option><option value="street">Calles</option><option value="satellite">Satélite</option><option value="none">Sin mapa base</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-excluded"> Ver excluidos</label></div><div id="map" aria-label="Mapa interactivo"></div><div class="map-caption"><span class="map-area"></span>Área UICN recortada a Bolivia · Los círculos representan registros por fuente.</div></section>
+<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="relief" selected>Relieve</option><option value="topographic">Topográfico</option><option value="satellite">Satelital</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-excluded"> Ver excluidos</label></div><div id="map" aria-label="Mapa interactivo"></div><div class="map-caption"><span class="map-area"></span>Área UICN recortada a Bolivia · Los círculos representan registros por fuente.</div></section>
 <aside class="right" aria-label="Observaciones y revisión">
 <div class="topline"><h2 id="species-name">Selecciona una especie</h2><span class="badge" id="species-cat"></span></div><div id="species-meta" class="note"></div><p id="status" role="status"></p>
 <div id="species-info" hidden><section class="section"><span id="total" class="total"></span><span id="total-label"></span><div id="sources"></div></section>
@@ -31,17 +31,26 @@ const $=id=>document.getElementById(id);
 const palette={'ICTIO':'#237ccb','AmazFish':'#db713e','iNaturalist':'#2b9b66','GBIF':'#8954c7','AmazonFish v2':'#c08814','FishBase':'#d8467f','Literatura':'#087f8c'};
 let catalog=[], current=null, map, baselayer, areas, markers, loadSeq=0, limit=60, busy=false, lastPoint=null;
 const selected=new Set(), filters=new Set(Object.keys(palette));
-const base={
- light:['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png','&copy; OpenStreetMap contributors &copy; CARTO'],
- street:['https://tile.openstreetmap.org/{z}/{x}/{y}.png','&copy; OpenStreetMap contributors'],
- satellite:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','Tiles &copy; Esri, Maxar, Earthstar Geographics']
+const esriServices='https://services.arcgisonline.com/ArcGIS/rest/services/';
+const basemaps={
+ relief:['Elevation/World_Hillshade','Esri, Vantor, Airbus DS, USGS, NGA, NASA, CGIAR, N Robinson, NCEAS, NLS, OS, NMA, Geodatastyrelsen, Rijkswaterstaat, GSA, Geoland, FEMA, Intermap, and the GIS user community'],
+ topographic:['World_Topo_Map','Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), OpenStreetMap contributors, and the GIS User Community'],
+ satellite:['World_Imagery','Esri, Vantor, Earthstar Geographics, and the GIS User Community'],
+ dark:['Canvas/World_Dark_Gray_Base','Esri, HERE, Garmin, OpenStreetMap contributors, and the GIS user community']
 };
 function node(tag,text,cls){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;}
 function badgeClass(cat){return ['EX','EW','CR','EN'].includes(cat)?'danger':['VU','NT'].includes(cat)?'warn':cat==='LC'?'good':'';}
 function number(n){return new Intl.NumberFormat('es-BO').format(n);}
 async function api(url,options={}){const r=await fetch(url,options);const v=await r.json();if(!r.ok)throw Object.assign(Error(v.error||'Error de servicio'),{status:r.status});return v;}
 function post(url,obj){return api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});}
-function changeBase(){if(!map)return;if(baselayer)map.removeLayer(baselayer);const c=base[$('basemap').value];if(c){baselayer=L.tileLayer(c[0],{attribution:c[1],maxZoom:19});baselayer.addTo(map);}}
+function changeBase(){
+  if(!map)return;
+  if(baselayer)map.removeLayer(baselayer);
+  const [service,credits]=basemaps[$('basemap').value];
+  const url=esriServices+service+'/MapServer';
+  const attribution='&copy; <a href="'+url+'" title="'+credits+'" target="_blank" rel="noopener noreferrer">Esri y colaboradores</a>';
+  baselayer=L.tileLayer(url+'/tile/{z}/{y}/{x}',{attribution,maxZoom:19}).addTo(map);
+}
 function initMap(){if(map){map.invalidateSize();return;}map=L.map('map',{preferCanvas:true,minZoom:3}).setView([-16.5,-64.7],5);changeBase();areas=L.featureGroup().addTo(map);markers=L.featureGroup().addTo(map);map.on('moveend',()=>{if(current)renderPointList();});}
 function loginScreen(msg=''){$('portal').hidden=true;$('login').hidden=false;$('login-msg').textContent=msg;}
 async function start(){catalog=await api('/api/catalog');$('login').hidden=true;$('portal').hidden=false;initMap();const cat=$('category');for(const o of [...cat.options].slice(1))o.remove();for(const c of [...new Set(catalog.map(s=>s.category))].sort())cat.add(new Option(c,c));renderCatalog();const initial=catalog.find(s=>s.id==='orestias-agassii')||catalog[0];if(initial)await openSpecies(initial.id);}
