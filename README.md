@@ -19,3 +19,7 @@ La interfaz se abre directamente en [GitHub Pages](https://ctemplar-zz.github.io
 
 Se publican las categorías de la lista Excel, con prioridad para la propuesta nacional de 2026, luego la categoría nacional de 2009 y la categoría global cuando están disponibles. Las áreas de distribución se recortaron previamente con el límite de Bolivia. Se simplificaron las geometrías para la visualización web y se mantuvieron los registros por fuente, incluidos los solapamientos señalados en los datos de origen.
 
+
+### Capas de referencia
+
+El mapa abre con World Imagery de Esri. La capa departamental y las líneas de OSM se leen del almacén privado `reference/v1/`. Para provisionar una copia del sitio, carga primero `departments`, `overview`, `regional` y los JSON de la cuadrícula mediante `PUT /api/import-reference/{key}`, con un secreto independiente `REFERENCE_IMPORT_TOKEN`. Carga `index` al final para cerrar la importación. El índice contiene la lista de claves de cuadrícula y los recuentos.

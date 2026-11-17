@@ -17,7 +17,10 @@ async function sign(s,secret) {
 }
 const cookieName='libro_rojo';
 const pagesOrigin='https://ctemplar-zz.github.io';
+const referenceKey=/^(?:index|departments|overview|regional|g-\d{1,3}-\d{1,3})$/;
+const referenceRoute=/^\/api\/reference\/([^/]+)$/;
 const pagesPath=/^\/api\/(?:catalog|login|logout|species\/[a-z][a-z-]{2,100}(?:\/review)?)$/;
+const referenceObject=key=>'reference/v1/'+key;
 const tokenPattern=/^\d+\.[a-f0-9]{32}\.[a-f0-9]{64}$/;
 const fromPages=request=>request.headers.get('origin')===pagesOrigin;
 function cors(response,preflight=false) {
@@ -71,6 +74,23 @@ async function seed(request,env,key) {
   await env.BUCKET.put('data/'+key,raw);
   return json({stored:true});
 }
+async function seedReference(request,env,key) {
+  if(!env.REFERENCE_IMPORT_TOKEN||!await safeEqual(request.headers.get('authorization')||'','Bearer '+env.REFERENCE_IMPORT_TOKEN))return errors('Acceso restringido',401);
+  if(await env.BUCKET.head(referenceObject('index')))return errors('Las capas ya están publicadas',409);
+  const raw=await request.text();
+  if(raw.length>16_000_000)return errors('Archivo demasiado grande',413);
+  const data=JSON.parse(raw);
+  if(key==='index'){
+    if(!Array.isArray(data.tiles)||data.tiles.length>300||data.tiles.some(k=>typeof k!=='string'||!/^g-\d{1,3}-\d{1,3}$/.test(k)))return errors('Índice inválido',400);
+    const {objects}=await env.BUCKET.list({prefix:referenceObject(''),limit:400});
+    const uploaded=new Set(objects.map(o=>o.key));
+    if([...data.tiles,'departments','overview','regional'].some(k=>!uploaded.has(referenceObject(k))))return errors('Hay capas pendientes de subir',409);
+    return json({stored:!!await env.BUCKET.put(referenceObject('index'),raw,{onlyIf:{etagDoesNotMatch:'*'}})});
+  }
+  if(key==='departments'?data.type!=='FeatureCollection'||data.features?.length!==9:!Array.isArray(data))return errors('Capa inválida',400);
+  await env.BUCKET.put(referenceObject(key),raw);
+  return json({stored:true});
+}
 async function update(request,bucket,id) {
   const {ids,action,reason,reviewer}=await request.json();
   const name=typeof reviewer==='string'?reviewer.trim():'';
@@ -100,6 +120,10 @@ async function handle(request,env){
   const path=url.pathname;
   try {
     if(path==='/'&&request.method==='GET')return new Response(html,{headers:{...headers,'content-type':'text/html; charset=utf-8'}});
+    if(path.startsWith('/api/import-reference/')&&request.method==='PUT'){
+      const key=path.split('/').at(-1);
+      return referenceKey.test(key)?await seedReference(request,env,key):errors('Ruta incorrecta',404);
+    }
     if(path.startsWith('/api/import/')&&request.method==='PUT'){
       const key=path.split('/').at(-1);
       return key==='index'||speciesId.test(key)?await seed(request,env,key):errors('Ruta incorrecta',404);
@@ -126,6 +150,11 @@ async function handle(request,env){
       : json({ok:true},200,{'set-cookie':cookie(request,'',0)});
     if(!path.startsWith('/api/'))return errors('Ruta no encontrada',404);
     if(!await authenticated(request,env))return errors('Inicia sesión para continuar',401);
+    const reference=path.match(referenceRoute);
+    if(reference&&referenceKey.test(reference[1])&&request.method==='GET'){
+      const obj=await env.BUCKET.get(referenceObject(reference[1]));
+      return obj?new Response(obj.body,{headers:{...headers,'content-type':'application/json; charset=utf-8'}}):errors('Capa no disponible',404);
+    }
     if(path==='/api/catalog'&&request.method==='GET'){
       const obj=await env.BUCKET.get('data/index');
       return obj?new Response(obj.body,{headers:{...headers,'content-type':'application/json; charset=utf-8'}}):errors('El catálogo se está cargando',503);
@@ -149,7 +178,8 @@ async function handle(request,env){
 export default {async fetch(request,env){
   if(!fromPages(request))return handle(request,env);
   const {pathname}=new URL(request.url);
-  if(!pagesPath.test(pathname))return errors('Ruta no encontrada',404);
+  const reference=pathname.match(referenceRoute);
+  if(!pagesPath.test(pathname)&&!(reference&&referenceKey.test(reference[1])))return errors('Ruta no encontrada',404);
   if(request.method==='OPTIONS'){
     const method=request.headers.get('access-control-request-method');
     const requested=(request.headers.get('access-control-request-headers')||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);

@@ -1,6 +1,6 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-+jO1xk1R9xcpfqDF5j6WHWAP7a+hfH4+LzL1oh72haI=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: https://unpkg.com https://services.arcgisonline.com; connect-src https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-FK2caiZ24QyFqaCr3SI9lFfyl7t3+J+ice9of1adTbI=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: https://unpkg.com https://services.arcgisonline.com; connect-src https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; base-uri 'none'; form-action 'none'">
 <title>Libro Rojo de Peces de Bolivia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -13,13 +13,15 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 #login{min-height:100dvh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 0% 5%,#457363 0,transparent 55%),radial-gradient(ellipse at 100% 100%,#1c4a3d 0,transparent 50%),#102d28}.loginCard{width:min(100%,440px);background:var(--paper);padding:35px;border:1px solid #97afa2;border-top:4px solid #b48242;border-radius:14px;box-shadow:0 18px 60px #0a271c}.loginCard h1{font-size:48px;line-height:1}.loginCard label{display:grid;gap:5px;margin:14px 0;font-weight:600}.loginCard input,.loginCard button{width:100%}#login-msg,#review-msg{color:#963b2b}
 #portal{height:100dvh;display:flex;flex-direction:column}.layout{min-height:0;flex:1;display:grid;grid-template-columns:minmax(220px,255px) minmax(0,1fr) minmax(290px,340px)}.left,.right{min-height:0;min-width:0;overflow:auto;scrollbar-width:thin}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line);padding:17px}.left-head{position:sticky;top:0;padding:16px 14px 10px;background:var(--paper);z-index:1}.left h2,.right h2{font-size:31px;line-height:1.04}.left input{width:100%;margin:8px 0}.left select{width:100%;margin-bottom:3px}#species-list{padding:0 8px 12px}.species{width:100%;background:transparent;text-align:left;border:1px solid transparent;border-radius:7px;display:flex;gap:8px;justify-content:space-between;align-items:center;padding:9px 7px}.species.active{background:#dcebe0;border-color:#b7cabd;color:#123b2e}.species span:first-child{min-width:0}.badge{display:inline-block;padding:3px 6px;border-radius:5px;background:#e8ece6;color:#37514a;font-weight:700;font-size:11px;white-space:nowrap}.badge.danger{background:#f7dbd2;color:#932d1f}.badge.warn{background:#f5e6c9;color:#7a4b18}.badge.good{background:#dcece0;color:#255344}
 .map-panel{display:flex;flex-direction:column;min-height:0;position:relative}.map-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;background:#edf1e9;border-bottom:1px solid var(--line);z-index:2}.map-tools button,.map-tools select{font-size:12px}.map-tools label{font-size:12px;display:flex;align-items:center;gap:2px;padding:0 3px}#map{flex:1;min-height:300px;background:#e3ebe1}.map-caption{padding:7px 10px;border-top:1px solid var(--line);font-size:11px;background:var(--paper);color:var(--muted)}.map-area{border:1px solid #007f71;background:#90d6ca66;display:inline-block;width:14px;height:9px;margin-right:5px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;flex:none}.total{font:40px/1 "Instrument Serif",Georgia;margin-right:8px}.section{border-top:1px solid var(--line);padding-top:11px;margin-top:13px}.section h3{margin:0 0 6px;font-size:14px}.source{display:flex;align-items:center;justify-content:space-between;padding:4px 0;gap:6px}.source label{display:flex;align-items:center;gap:3px;cursor:pointer}.source input{margin:0 3px 0 0}.point-list{max-height:218px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.point{display:flex;align-items:center;gap:6px;padding:6px;border-bottom:1px solid #edf0ea}.point button{border:0;background:none;text-align:left;padding:2px 5px;flex:1}.point button:hover{background:var(--soft)}.point small{display:block;font-size:11px}#point-info{display:grid;gap:4px;overflow-wrap:anywhere}.review label{display:block;margin:7px 0 3px}.review input,.review textarea{width:100%}.review textarea{min-height:60px;resize:vertical}.actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.actions button{font-size:12px}.history{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.right .topline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}details{margin-top:9px}summary{cursor:pointer;color:var(--muted)}.leaflet-container{font-family:"DM Sans",sans-serif}
+.map-line{display:inline-block;width:14px;border-top:2px solid;margin:0 4px 2px 10px}.department-line{border-top:2px dashed #d9a74d}.river-line{border-color:#429bff}
+.river-label{color:#bde4ff;font-size:11px;font-weight:700;font-style:italic;white-space:nowrap;width:max-content!important;height:auto!important;transform-origin:center;text-shadow:-1px -1px 0 #142c4a,1px -1px 0 #142c4a,-1px 1px 0 #142c4a,1px 1px 0 #142c4a;pointer-events:none}.river-label span{display:block;transform:translate(-50%,-50%)}
 @media(max-width:990px){.layout{grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(250px,280px)}header{padding:12px}.right{padding:12px}}@media(max-width:700px){#portal{height:auto;min-height:100dvh}.layout{display:flex;flex-direction:column}.left{max-height:250px;border:0}.left-head{padding:10px 12px 6px}.left h2{font-size:25px}.left input{width:52%;margin-right:5px}.left select{width:42%}.right{border:0}.map-panel{height:60dvh;min-height:370px}.right .point-list{max-height:220px}header h1{font-size:25px}}
 </style></head><body>
 <main id="login" hidden><form id="login-form" class="loginCard" method="post"><p class="muted">BOLIVIA · ICTIOFAUNA</p><h1>Libro Rojo<br>de Peces</h1><p class="muted">Geoportal de distribución y revisión de registros</p><label>Usuario<input name="user" autocomplete="username" required maxlength="128"></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button class="primary">Ingresar</button><p id="login-msg" role="status"></p></form></main>
 <main id="portal" hidden><header><div><div class="kicker">Biodiversidad de Bolivia</div><h1>Libro Rojo de Peces</h1></div><button id="logout">Cerrar sesión</button></header>
 <div class="layout">
 <aside class="left" aria-label="Catálogo de especies"><div class="left-head"><h2>Especies</h2><small id="species-count"></small><input id="search" type="search" placeholder="Buscar especie o familia" aria-label="Buscar especie o familia"><select id="category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select></div><div id="species-list"></div></aside>
-<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="relief" selected>Relieve</option><option value="topographic">Topográfico</option><option value="satellite">Satelital</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-excluded"> Ver excluidos</label></div><div id="map" aria-label="Mapa interactivo"></div><div class="map-caption"><span class="map-area"></span>Área UICN recortada a Bolivia · Los círculos representan registros por fuente.</div></section>
+<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="satellite" selected>Satelital</option><option value="relief">Relieve</option><option value="topographic">Topográfico</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-departments" checked> Límites departamentales</label><label><input type="checkbox" id="show-rivers" checked> Ríos</label><label><input type="checkbox" id="show-excluded"> Ver excluidos</label></div><div id="map" aria-label="Mapa interactivo"></div><div class="map-caption"><span class="map-area"></span>Área UICN <span class="map-line department-line"></span>Límite departamental <span class="map-line river-line"></span>Río · Círculos por fuente <span id="ref-status" role="status"></span></div></section>
 <aside class="right" aria-label="Observaciones y revisión">
 <div class="topline"><h2 id="species-name">Selecciona una especie</h2><span class="badge" id="species-cat"></span></div><div id="species-meta" class="note"></div><p id="status" role="status"></p>
 <div id="species-info" hidden><section class="section"><span id="total" class="total"></span><span id="total-label"></span><div id="sources"></div></section>
@@ -39,6 +41,9 @@ function rememberSession(token){
 }
 const palette={'ICTIO':'#237ccb','AmazFish':'#db713e','iNaturalist':'#2b9b66','GBIF':'#8954c7','AmazonFish v2':'#c08814','FishBase':'#d8467f','Literatura':'#087f8c'};
 let catalog=[], current=null, map, baselayer, areas, markers, loadSeq=0, limit=60, busy=false, lastPoint=null;
+let departmentLayer,rivers,riverLabels,referenceSeq=0,riverCredit=false;
+const referenceCache=new Map();
+const osmCredit='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
 const selected=new Set(), filters=new Set(Object.keys(palette));
 const esriServices='https://services.arcgisonline.com/ArcGIS/rest/services/';
 const basemaps={
@@ -70,7 +75,105 @@ function changeBase(){
   const attribution='&copy; <a href="'+url+'" title="'+credits+'" target="_blank" rel="noopener noreferrer">Esri y colaboradores</a>';
   baselayer=L.tileLayer(url+'/tile/{z}/{y}/{x}',{attribution,maxZoom:19}).addTo(map);
 }
-function initMap(){if(map){map.invalidateSize();return;}map=L.map('map',{preferCanvas:true,minZoom:3}).setView([-16.5,-64.7],5);changeBase();areas=L.featureGroup().addTo(map);markers=L.featureGroup().addTo(map);map.on('moveend',()=>{if(current)renderPointList();});}
+function initMap(){
+  if(map){map.invalidateSize();return;}
+  map=L.map('map',{preferCanvas:true,minZoom:3}).setView([-16.5,-64.7],5);
+  for(const [name,z] of [['departments',365],['rivers',375],['river-labels',410]]){
+    const pane=map.createPane(name);
+    pane.style.zIndex=z;
+    pane.style.pointerEvents='none';
+  }
+  changeBase();
+  areas=L.featureGroup().addTo(map);
+  rivers=L.layerGroup().addTo(map);
+  riverLabels=L.layerGroup().addTo(map);
+  markers=L.featureGroup().addTo(map);
+  map.on('moveend',()=>{if(current)renderPointList();renderRivers();});
+  renderDepartments();
+  renderRivers();
+}
+function reference(key){
+  if(referenceCache.has(key)){
+    const cached=referenceCache.get(key);
+    referenceCache.delete(key);
+    referenceCache.set(key,cached);
+    return cached;
+  }
+  const pending=api('/api/reference/'+key).catch(e=>{referenceCache.delete(key);throw e;});
+  referenceCache.set(key,pending);
+  if(referenceCache.size>66)referenceCache.delete(referenceCache.keys().next().value);
+  return pending;
+}
+async function renderDepartments(){
+  if(!$('show-departments').checked){if(departmentLayer)departmentLayer.remove();return;}
+  try{
+    const data=await reference('departments');
+    if(!$('show-departments').checked)return;
+    departmentLayer ||= L.geoJSON(data,{pane:'departments',interactive:false,style:{
+      color:'#f2cc7c',weight:1.5,dashArray:'5 3',opacity:.9,fill:false
+    }});
+    if(!map.hasLayer(departmentLayer))departmentLayer.addTo(map);
+  }catch(e){$('ref-status').textContent=' · Límites no disponibles';}
+}
+function viewTiles(available,bounds){
+  const active=new Set(available),tiles=[];
+  for(let x=Math.floor(bounds.getWest());x<=Math.floor(bounds.getEast());x++){
+    for(let y=Math.floor(bounds.getSouth());y<=Math.floor(bounds.getNorth());y++){
+      const key='g-'+(x+180)+'-'+(y+90);
+      if(active.has(key))tiles.push(key);
+    }
+  }
+  return tiles;
+}
+function labelRivers(records,bounds){
+  const labels=[], usedNames=new Set();
+  for(const [,name,,dist,path] of records.filter(r=>r[1]).sort((a,b)=>b[3]-a[3])){
+    if(usedNames.has(name.toLowerCase())||labels.length>=80)continue;
+    const mid=Math.floor(path.length/2);
+    const candidates=[path[mid],path[Math.floor(path.length/4)],path[Math.floor(path.length*3/4)],path[0],path.at(-1)];
+    const anchor=candidates.find(([lng,lat])=>bounds.contains([lat,lng]));
+    if(!anchor)continue;
+    const at=[anchor[1],anchor[0]];
+    const pos=map.latLngToContainerPoint(at);
+    const half=Math.min(100,Math.max(25,name.length*3.1));
+    if(labels.some(x=>Math.abs(x.pos.x-pos.x)<x.half+half+10&&Math.abs(x.pos.y-pos.y)<19))continue;
+    labels.push({pos,half});
+    usedNames.add(name.toLowerCase());
+    const tooltip=node('span',name);
+    L.marker(at,{pane:'river-labels',interactive:false,keyboard:false,icon:L.divIcon({className:'river-label',iconSize:[0,0],iconAnchor:[0,0],html:tooltip})}).addTo(riverLabels);
+  }
+}
+async function renderRivers(){
+  const seq=++referenceSeq;
+  const enabled=$('show-rivers').checked;
+  if(enabled!==riverCredit){
+    if(enabled)map.attributionControl.addAttribution(osmCredit);
+    else map.attributionControl.removeAttribution(osmCredit);
+    riverCredit=enabled;
+  }
+  if(!enabled){rivers.clearLayers();riverLabels.clearLayers();return;}
+  const zoom=map.getZoom(), bounds=map.getBounds();
+  try{
+    let collections;
+    if(zoom>=9){
+      const {tiles}=await reference('index');
+      if(seq!==referenceSeq)return;
+      const view=viewTiles(tiles,bounds);
+      collections=await Promise.all(view.map(reference));
+    }else collections=[await reference(zoom>=7?'regional':'overview')];
+    if(seq!==referenceSeq)return;
+    const records=[...new Map(collections.flat().map(r=>[r[0],r])).values()];
+    rivers.clearLayers();
+    riverLabels.clearLayers();
+    if(records.length){
+      L.polyline(records.map(r=>r[4].map(p=>[p[1],p[0]])),{
+        pane:'rivers',interactive:false,color:'#459dff',weight:1.15,opacity:.88,smoothFactor:1.1
+      }).addTo(rivers);
+      labelRivers(records,bounds);
+    }
+    if($('ref-status').textContent===' · Ríos no disponibles')$('ref-status').textContent='';
+  }catch(e){if(seq===referenceSeq)$('ref-status').textContent=' · Ríos no disponibles';}
+}
 function loginScreen(msg=''){$('portal').hidden=true;$('login').hidden=false;$('login-msg').textContent=msg;}
 async function start(){catalog=await api('/api/catalog');$('login').hidden=true;$('portal').hidden=false;initMap();const cat=$('category');for(const o of [...cat.options].slice(1))o.remove();for(const c of [...new Set(catalog.map(s=>s.category))].sort())cat.add(new Option(c,c));renderCatalog();const initial=catalog.find(s=>s.id==='orestias-agassii')||catalog[0];if(initial)await openSpecies(initial.id);}
 function renderCatalog(){const q=$('search').value.trim().toLowerCase(), cat=$('category').value;const list=catalog.filter(s=>(!q||(s.name+' '+s.family).toLowerCase().includes(q))&&(!cat||s.category===cat));$('species-count').textContent=number(list.length)+' de '+number(catalog.length)+' especies';const entries=list.map(s=>{const b=node('button',null,'species'+(current?.species.id===s.id?' active':''));b.type='button';b.setAttribute('aria-pressed',String(current?.species.id===s.id));const name=node('span');name.append(node('i',s.name),node('small',' · '+number(s.count)));b.append(name,node('span',s.category,'badge '+badgeClass(s.category)));b.addEventListener('click',()=>openSpecies(s.id));return b;});$('species-list').replaceChildren(...entries);}
@@ -94,6 +197,8 @@ $('logout').onclick=async()=>{
 };
 $('search').oninput=renderCatalog;$('category').onchange=renderCatalog;$('basemap').onchange=changeBase;$('fit').onclick=fit;
 $('show-area').onchange=()=>{if(current)renderAreas();};
+$('show-departments').onchange=renderDepartments;
+$('show-rivers').onchange=renderRivers;
 $('show-excluded').onchange=()=>{if(!current)return;if(!$('show-excluded').checked)for(const id of selected)if(reviewOf(id)?.excluded)selected.delete(id);renderMarkers();renderPointList();};
 $('select-view').onclick=()=>{for(const p of shown())if(map.getBounds().contains([p.y,p.x]))selected.add(p.id);renderMarkers();renderPointList();};
 $('clear').onclick=()=>{selected.clear();renderMarkers();renderPointList();};

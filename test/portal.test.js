@@ -5,6 +5,7 @@ import worker from '../dist/server/index.js';
 test('autenticación, lectura protegida y revisión compartida', async () => {
   const id='orestias-agassii', point='a'.repeat(20);
   const db=new Map([
+    ['reference/v1/index',{value:'{"tiles":[],"departmentCount":9}',etag:'references'}],
     ['data/index',{value:'[{"id":"'+id+'"}]',etag:'index'}],
     ['data/'+id,{value:JSON.stringify({species:{id},points:[{id:point}],areas:[]}),etag:'species'}],
   ]);
@@ -54,6 +55,13 @@ test('autenticación, lectura protegida y revisión compartida', async () => {
   assert.equal(pagesLogin.headers.get('set-cookie'),null);
   const {token}=await pagesLogin.json();
   const pagesHeaders={origin:pages,authorization:'Bearer '+token};
+  const referencePath='/api/reference/index';
+  assert.equal((await go(referencePath,{headers:{origin:pages}})).status,401);
+  const references=await go(referencePath,{headers:pagesHeaders});
+  assert.equal(references.headers.get('access-control-allow-origin'),pages);
+  assert.deepEqual(await references.json(),{tiles:[],departmentCount:9});
+  assert.equal((await go('/api/import-reference/index',{method:'OPTIONS',headers:{origin:pages,'access-control-request-method':'PUT'}})).status,404);
+
   assert.equal((await go(route,{headers:{authorization:'Bearer '+token}})).status,401);
   const update=await go(route+'/review',{method:'POST',headers:pagesHeaders,body:JSON.stringify(body)});
   assert.equal(update.status,200);
