@@ -38,6 +38,28 @@ test('autenticación, lectura protegida y revisión compartida', async () => {
   const review=(await (await go(route,{headers})).json()).review;
   assert.equal(review.points[point].excluded,false);
   assert.equal(review.history.length,2);
+
+  const pages='https://ctemplar-zz.github.io';
+  const preflight=await go(route+'/review',{method:'OPTIONS',headers:{
+    origin:pages,'access-control-request-method':'POST','access-control-request-headers':'authorization,content-type',
+  }});
+  assert.equal(preflight.status,204);
+  assert.equal(preflight.headers.get('access-control-allow-origin'),pages);
+  assert.equal(preflight.headers.get('access-control-allow-credentials'),null);
+  assert.equal((await go('/api/import/index',{method:'OPTIONS',headers:{origin:pages,'access-control-request-method':'PUT'}})).status,404);
+  assert.equal((await go('/api/catalog',{headers:{origin:pages,cookie}})).status,401);
+  const pagesLogin=await go('/api/login',{method:'POST',headers:{origin:pages},body:'{"user":"user-test","password":"password-test"}'});
+  assert.equal(pagesLogin.status,200);
+  assert.equal(pagesLogin.headers.get('access-control-allow-origin'),pages);
+  assert.equal(pagesLogin.headers.get('set-cookie'),null);
+  const {token}=await pagesLogin.json();
+  const pagesHeaders={origin:pages,authorization:'Bearer '+token};
+  assert.equal((await go(route,{headers:{authorization:'Bearer '+token}})).status,401);
+  const update=await go(route+'/review',{method:'POST',headers:pagesHeaders,body:JSON.stringify(body)});
+  assert.equal(update.status,200);
+  assert.equal((await (await go(route,{headers})).json()).review.points[point].excluded,true);
+
+
 });
 
 

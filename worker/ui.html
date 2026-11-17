@@ -1,5 +1,6 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- GitHub Pages security policy -->
 <title>Libro Rojo de Peces de Bolivia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -14,7 +15,7 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 .map-panel{display:flex;flex-direction:column;min-height:0;position:relative}.map-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;background:#edf1e9;border-bottom:1px solid var(--line);z-index:2}.map-tools button,.map-tools select{font-size:12px}.map-tools label{font-size:12px;display:flex;align-items:center;gap:2px;padding:0 3px}#map{flex:1;min-height:300px;background:#e3ebe1}.map-caption{padding:7px 10px;border-top:1px solid var(--line);font-size:11px;background:var(--paper);color:var(--muted)}.map-area{border:1px solid #007f71;background:#90d6ca66;display:inline-block;width:14px;height:9px;margin-right:5px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;flex:none}.total{font:40px/1 "Instrument Serif",Georgia;margin-right:8px}.section{border-top:1px solid var(--line);padding-top:11px;margin-top:13px}.section h3{margin:0 0 6px;font-size:14px}.source{display:flex;align-items:center;justify-content:space-between;padding:4px 0;gap:6px}.source label{display:flex;align-items:center;gap:3px;cursor:pointer}.source input{margin:0 3px 0 0}.point-list{max-height:218px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.point{display:flex;align-items:center;gap:6px;padding:6px;border-bottom:1px solid #edf0ea}.point button{border:0;background:none;text-align:left;padding:2px 5px;flex:1}.point button:hover{background:var(--soft)}.point small{display:block;font-size:11px}#point-info{display:grid;gap:4px;overflow-wrap:anywhere}.review label{display:block;margin:7px 0 3px}.review input,.review textarea{width:100%}.review textarea{min-height:60px;resize:vertical}.actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.actions button{font-size:12px}.history{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.right .topline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}details{margin-top:9px}summary{cursor:pointer;color:var(--muted)}.leaflet-container{font-family:"DM Sans",sans-serif}
 @media(max-width:990px){.layout{grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(250px,280px)}header{padding:12px}.right{padding:12px}}@media(max-width:700px){#portal{height:auto;min-height:100dvh}.layout{display:flex;flex-direction:column}.left{max-height:250px;border:0}.left-head{padding:10px 12px 6px}.left h2{font-size:25px}.left input{width:52%;margin-right:5px}.left select{width:42%}.right{border:0}.map-panel{height:60dvh;min-height:370px}.right .point-list{max-height:220px}header h1{font-size:25px}}
 </style></head><body>
-<main id="login" hidden><form id="login-form" class="loginCard"><p class="muted">BOLIVIA · ICTIOFAUNA</p><h1>Libro Rojo<br>de Peces</h1><p class="muted">Geoportal de distribución y revisión de registros</p><label>Usuario<input name="user" autocomplete="username" required maxlength="128"></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button class="primary">Ingresar</button><p id="login-msg" role="status"></p></form></main>
+<main id="login" hidden><form id="login-form" class="loginCard" method="post"><p class="muted">BOLIVIA · ICTIOFAUNA</p><h1>Libro Rojo<br>de Peces</h1><p class="muted">Geoportal de distribución y revisión de registros</p><label>Usuario<input name="user" autocomplete="username" required maxlength="128"></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button class="primary">Ingresar</button><p id="login-msg" role="status"></p></form></main>
 <main id="portal" hidden><header><div><div class="kicker">Biodiversidad de Bolivia</div><h1>Libro Rojo de Peces</h1></div><button id="logout">Cerrar sesión</button></header>
 <div class="layout">
 <aside class="left" aria-label="Catálogo de especies"><div class="left-head"><h2>Especies</h2><small id="species-count"></small><input id="search" type="search" placeholder="Buscar especie o familia" aria-label="Buscar especie o familia"><select id="category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select></div><div id="species-list"></div></aside>
@@ -28,6 +29,14 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
+const apiOrigin=''; // Replaced when building the GitHub Pages entry.
+const sessionKey='LibroRojoPeces.session';
+let pagesSession=apiOrigin?sessionStorage.getItem(sessionKey):null;
+function rememberSession(token){
+  pagesSession=token;
+  if(token)sessionStorage.setItem(sessionKey,token);
+  else sessionStorage.removeItem(sessionKey);
+}
 const palette={'ICTIO':'#237ccb','AmazFish':'#db713e','iNaturalist':'#2b9b66','GBIF':'#8954c7','AmazonFish v2':'#c08814','FishBase':'#d8467f','Literatura':'#087f8c'};
 let catalog=[], current=null, map, baselayer, areas, markers, loadSeq=0, limit=60, busy=false, lastPoint=null;
 const selected=new Set(), filters=new Set(Object.keys(palette));
@@ -41,7 +50,17 @@ const basemaps={
 function node(tag,text,cls){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;}
 function badgeClass(cat){return ['EX','EW','CR','EN'].includes(cat)?'danger':['VU','NT'].includes(cat)?'warn':cat==='LC'?'good':'';}
 function number(n){return new Intl.NumberFormat('es-BO').format(n);}
-async function api(url,options={}){const r=await fetch(url,options);const v=await r.json();if(!r.ok)throw Object.assign(Error(v.error||'Error de servicio'),{status:r.status});return v;}
+async function api(url,options={}){
+  const headers=new Headers(options.headers);
+  if(apiOrigin&&pagesSession)headers.set('Authorization','Bearer '+pagesSession);
+  const r=await fetch(apiOrigin+url,{...options,headers,credentials:apiOrigin?'omit':'same-origin',redirect:'error'});
+  const v=await r.json();
+  if(!r.ok){
+    if(apiOrigin&&r.status===401)rememberSession(null);
+    throw Object.assign(Error(v.error||'Error de servicio'),{status:r.status});
+  }
+  return v;
+}
 function post(url,obj){return api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});}
 function changeBase(){
   if(!map)return;
@@ -67,8 +86,12 @@ function renderPointList(){const pts=shown().filter(p=>map.getBounds().contains(
 function renderDetail(){const elem=$('point-info');elem.replaceChildren();elem.hidden=!lastPoint;if(!lastPoint)return;const p=lastPoint;elem.append(node('strong',p.source+' · '+p.id),node('span','Lat. '+p.y.toFixed(6)+' · Lon. '+p.x.toFixed(6)));if(p.date)elem.append(node('span','Fecha: '+p.date));if(p.precision!=null)elem.append(node('span','Precisión indicada: '+p.precision+' m'));if(p.catalog)elem.append(node('span','Catálogo: '+p.catalog));if(p.flags.length)elem.append(node('span',p.flags.join(' · ')));if(p.detail)elem.append(node('span',p.detail));if(/^https?:\/\//i.test(p.url)){const a=node('a','Abrir registro de origen ↗');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';elem.append(a);}const r=reviewOf(p.id);if(r)elem.append(node('span',(r.excluded?'Excluido':'Restaurado')+' por '+r.reviewer+' · '+r.reason));}
 function renderHistory(){const history=current.review.history;$('history-title').textContent='Historial de revisión ('+history.length+')';$('history').replaceChildren(...history.slice().reverse().map(h=>node('p',new Date(h.at).toLocaleString('es-BO',{timeZone:'America/La_Paz'})+' · '+h.reviewer+' · '+(h.action==='exclude'?'Excluyó':'Restauró')+' '+number(h.ids.length)+'\n'+h.reason,'history')));}
 function render(){renderSources();renderMarkers();renderPointList();renderDetail();renderHistory();}
-$('login-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;const b=form.querySelector('button');b.disabled=true;try{await post('/api/login',Object.fromEntries(new FormData(form)));form.reset();await start();}catch(err){$('login-msg').textContent=err.message;}finally{b.disabled=false;}});
-$('logout').onclick=async()=>{await post('/api/logout',{});location.reload();};
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;const b=form.querySelector('button');b.disabled=true;try{const login=await post('/api/login',Object.fromEntries(new FormData(form)));if(apiOrigin)rememberSession(login.token);form.reset();await start();}catch(err){$('login-msg').textContent=err.message;}finally{b.disabled=false;}});
+$('logout').onclick=async()=>{
+  if(apiOrigin)rememberSession(null);
+  else await post('/api/logout',{});
+  location.reload();
+};
 $('search').oninput=renderCatalog;$('category').onchange=renderCatalog;$('basemap').onchange=changeBase;$('fit').onclick=fit;
 $('show-area').onchange=()=>{if(current)renderAreas();};
 $('show-excluded').onchange=()=>{if(!current)return;if(!$('show-excluded').checked)for(const id of selected)if(reviewOf(id)?.excluded)selected.delete(id);renderMarkers();renderPointList();};

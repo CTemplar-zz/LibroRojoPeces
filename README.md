@@ -2,6 +2,10 @@
 
 Geoportal de consulta y revisión de las observaciones y distribuciones UICN del proyecto. El usuario puede filtrar especies, cambiar el mapa base, revisar fichas por fuente y excluir o restaurar registros con un motivo. Cada revisión registra la fecha y el nombre declarado por el revisor.
 
+## Entrada desde GitHub Pages
+
+La interfaz se abre directamente en [GitHub Pages](https://ctemplar-zz.github.io/LibroRojoPeces/). El servidor de Sites valida el inicio de sesión y guarda los cambios en el mismo almacén de revisiones que usa su propia interfaz. Para actualizar el HTML raíz después de editar la interfaz, ejecuta `node scripts/build.mjs --pages` y versiona el archivo generado.
+
 ## Ejecutar y publicar
 
 - Node.js 22 o posterior.

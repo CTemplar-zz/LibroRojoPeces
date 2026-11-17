@@ -16,12 +16,31 @@ async function sign(s,secret) {
   return hex(await crypto.subtle.sign('HMAC',key,enc.encode(s)));
 }
 const cookieName='libro_rojo';
+const pagesOrigin='https://ctemplar-zz.github.io';
+const pagesPath=/^\/api\/(?:catalog|login|logout|species\/[a-z][a-z-]{2,100}(?:\/review)?)$/;
+const tokenPattern=/^\d+\.[a-f0-9]{32}\.[a-f0-9]{64}$/;
+const fromPages=request=>request.headers.get('origin')===pagesOrigin;
+function cors(response,preflight=false) {
+  const headers=new Headers(response.headers);
+  headers.set('access-control-allow-origin',pagesOrigin);
+  headers.append('vary','Origin');
+  if(preflight) {
+    headers.set('access-control-allow-methods','GET, POST');
+    headers.set('access-control-allow-headers','Authorization, Content-Type');
+    headers.append('vary','Access-Control-Request-Method, Access-Control-Request-Headers');
+  }
+  return new Response(response.body,{status:response.status,headers});
+}
 async function authenticated(request,env) {
   if(!env.SESSION_SECRET)return false;
-  const token=request.headers.get('cookie')?.match(/(?:^|;\s*)libro_rojo=(\d+\.[a-f0-9]{32}\.[a-f0-9]{64})(?:;|$)/)?.[1];
-  if(!token)return false;
+  const pages=fromPages(request);
+  const token=pages
+    ? request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1]
+    : request.headers.get('cookie')?.match(/(?:^|;\s*)libro_rojo=([^;]+)/)?.[1];
+  if(!token||!tokenPattern.test(token))return false;
   const [until,nonce,mac]=token.split('.');
-  return Number(until)>Date.now()&&await safeEqual(mac,await sign(until+'.'+nonce,env.SESSION_SECRET));
+  const payload=(pages?'pages:':'')+until+'.'+nonce;
+  return Number(until)>Date.now()&&await safeEqual(mac,await sign(payload,env.SESSION_SECRET));
 }
 function cookie(request,value,maxAge) {
   const secure=new URL(request.url).protocol==='https:'?'; Secure':'';
@@ -29,7 +48,7 @@ function cookie(request,value,maxAge) {
 }
 const speciesId = /^[a-z][a-z-]{2,100}$/;
 const pointId = /^[a-f0-9]{20}$/;
-const originAllowed = (request,url)=>!request.headers.has('origin') || request.headers.get('origin')===url.origin;
+const originAllowed = (request,url)=>!request.headers.has('origin') || request.headers.get('origin')===url.origin || fromPages(request);
 const errors = (message,status)=>json({error:message},status);
 async function load(bucket,key) {
   const obj=await bucket.get(key);
@@ -76,7 +95,7 @@ async function update(request,bucket,id) {
   return errors('Otra persona guardó cambios al mismo tiempo. Intenta de nuevo.',409);
 }
 const misses = new Map();
-export default {async fetch(request,env){
+async function handle(request,env){
   const url=new URL(request.url);
   const path=url.pathname;
   try {
@@ -99,9 +118,12 @@ export default {async fetch(request,env){
       if(!userOk||!passwordOk){misses.set(ip,prior?.until>now?{...prior,n:prior.n+1}:{until:now+600_000,n:1});return errors('Usuario o contraseña incorrectos',401);}
       misses.delete(ip);
       const payload=(now+28_800_000)+'.'+hex(crypto.getRandomValues(new Uint8Array(16)));
+      if(fromPages(request))return json({token:payload+'.'+await sign('pages:'+payload,env.SESSION_SECRET)});
       return json({ok:true},200,{'set-cookie':cookie(request,payload+'.'+await sign(payload,env.SESSION_SECRET),28800)});
     }
-    if(path==='/api/logout'&&request.method==='POST')return json({ok:true},200,{'set-cookie':cookie(request,'',0)});
+    if(path==='/api/logout'&&request.method==='POST')return fromPages(request)
+      ? json({ok:true})
+      : json({ok:true},200,{'set-cookie':cookie(request,'',0)});
     if(!path.startsWith('/api/'))return errors('Ruta no encontrada',404);
     if(!await authenticated(request,env))return errors('Inicia sesión para continuar',401);
     if(path==='/api/catalog'&&request.method==='GET'){
@@ -123,5 +145,18 @@ export default {async fetch(request,env){
     console.error('Portal request failed',path,e?.name);
     return errors('Servicio temporalmente no disponible',503);
   }
+}
+export default {async fetch(request,env){
+  if(!fromPages(request))return handle(request,env);
+  const {pathname}=new URL(request.url);
+  if(!pagesPath.test(pathname))return errors('Ruta no encontrada',404);
+  if(request.method==='OPTIONS'){
+    const method=request.headers.get('access-control-request-method');
+    const requested=(request.headers.get('access-control-request-headers')||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);
+    if(!['GET','POST'].includes(method)||requested.some(h=>!['authorization','content-type'].includes(h)))return errors('Solicitud no permitida',403);
+    return cors(new Response(null,{status:204,headers}),true);
+  }
+  if(!['GET','POST'].includes(request.method))return cors(errors('Método no permitido',405));
+  return cors(await handle(request,env));
 }};
 
