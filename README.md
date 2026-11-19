@@ -2,6 +2,8 @@
 
 Geoportal de consulta y revisión de las observaciones y distribuciones UICN del proyecto. El usuario puede filtrar especies, cambiar el mapa base, revisar fichas por fuente y excluir o restaurar registros con un motivo. Cada revisión registra la fecha y el nombre declarado por el revisor.
 
+Las propuestas de exclusión mantienen el punto visible en rojo. El botón «Historial de exclusiones» consulta las revisiones de todas las especies, con filtros por especie y acción, y páginas de 50 registros. Cada entrada muestra revisor, fecha, motivo, estado actual, coordenadas y acceso a la ubicación en el mapa. Las restauraciones conservan el historial y recuperan el color de la fuente. Las nuevas revisiones guardan una copia de las coordenadas, fuente y URL; las revisiones anteriores consultan la ubicación en los datos de la especie.
+
 ## Entrada desde GitHub Pages
 
 La interfaz se abre directamente en [GitHub Pages](https://ctemplar-zz.github.io/LibroRojoPeces/). El servidor de Sites valida el inicio de sesión y guarda los cambios en el mismo almacén de revisiones que usa su propia interfaz. Para actualizar el HTML raíz después de editar la interfaz, ejecuta `node scripts/build.mjs --pages` y versiona el archivo generado.

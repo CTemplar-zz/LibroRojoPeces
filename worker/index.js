@@ -61,7 +61,7 @@ async function serveThematic(request,env,key){
   return new Response(obj.body,{status:206,headers:{...h,'content-range':'bytes '+offset+'-'+end+'/'+meta.size,'content-length':String(length)}});
 }
 
-const pagesPath=/^\/api\/(?:catalog|login|logout|species\/[a-z][a-z-]{2,100}(?:\/review)?)$/;
+const pagesPath=/^\/api\/(?:catalog|login|logout|reviews|species\/[a-z][a-z-]{2,100}(?:\/review)?)$/;
 const referenceObject=key=>'reference/v1/'+key;
 const tokenPattern=/^\d+\.[a-f0-9]{32}\.[a-f0-9]{64}$/;
 const fromPages=request=>request.headers.get('origin')===pagesOrigin;
@@ -134,6 +134,60 @@ async function seedReference(request,env,key) {
   await env.BUCKET.put(referenceObject(key),raw);
   return json({stored:true});
 }
+async function reviewHistory(bucket,url){
+  const species=url.searchParams.get('species')||'';
+  const action=url.searchParams.get('action')||'exclude';
+  const cursor=url.searchParams.get('cursor')||'';
+  if(species&&!speciesId.test(species)||!['exclude','restore','all'].includes(action))return errors('Filtro inválido',400);
+  let after=null;
+  if(cursor){
+    try{after=JSON.parse(atob(cursor));}catch{return errors('Página inválida',400);}
+    if(!Array.isArray(after)||after.length!==3||after.some(x=>typeof x!=='string'))return errors('Página inválida',400);
+  }
+  const keys=[];
+  if(species)keys.push('reviews/'+species);
+  else{
+    let continuation;
+    do{
+      const page=await bucket.list({prefix:'reviews/',limit:1000,...(continuation?{cursor:continuation}:{})});
+      keys.push(...page.objects.map(o=>o.key).filter(k=>speciesId.test(k.slice(8))));
+      continuation=page.truncated?page.cursor:null;
+    }while(continuation);
+  }
+  const states=new Map(),entries=[];
+  for(let start=0;start<keys.length;start+=8){
+    const reviews=await Promise.all(keys.slice(start,start+8).map(async key=>({species:key.slice(8),review:(await load(bucket,key))?.value})));
+    for(const {species,review} of reviews){
+      if(!review)continue;
+      states.set(species,review.points||{});
+      for(const event of review.history||[]){
+        if(action!=='all'&&event.action!==action)continue;
+        const points=new Map((event.points||[]).map(p=>[p.id,p]));
+        for(const id of event.ids||[]){
+          entries.push({species,pointId:id,eventId:event.id,at:event.at,action:event.action,reason:event.reason,reviewer:event.reviewer,snapshot:points.get(id)});
+        }
+      }
+    }
+  }
+  const compare=(a,b)=>a[0]===b[0]?(a[1]===b[1]?a[2].localeCompare(b[2]):a[1].localeCompare(b[1])):a[0].localeCompare(b[0]);
+  const entryKey=r=>[r.at,r.eventId,r.pointId];
+  entries.sort((a,b)=>-compare(entryKey(a),entryKey(b)));
+  const filtered=after?entries.filter(e=>compare(entryKey(e),after)<0):entries;
+  const page=filtered.slice(0,50);
+  const speciesData=new Map();
+  for(const id of new Set(page.map(e=>e.species))){
+    const data=(await load(bucket,'data/'+id))?.value;
+    speciesData.set(id,{name:data?.species?.name||id,points:new Map((data?.points||[]).map(p=>[p.id,p]))});
+  }
+  const items=page.map(e=>{
+    const data=speciesData.get(e.species);
+    const p=e.snapshot||data.points.get(e.pointId);
+    const coordinate=p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?{x:p.x,y:p.y}:null;
+    return {species:e.species,speciesName:data.name,pointId:e.pointId,eventId:e.eventId,at:e.at,action:e.action,reason:e.reason,reviewer:e.reviewer,
+      coordinate,source:p?.source||'',url:p?.url||'',excluded:!!states.get(e.species)?.[e.pointId]?.excluded};
+  });
+  return json({items,total:entries.length,next:filtered.length>50?btoa(JSON.stringify(entryKey(page.at(-1)))):null});
+}
 async function update(request,bucket,id) {
   const {ids,action,reason,reviewer}=await request.json();
   const name=typeof reviewer==='string'?reviewer.trim():'';
@@ -149,7 +203,12 @@ async function update(request,bucket,id) {
     const current=await load(bucket,key);
     const review=current?.value||emptyReview();
     const at=new Date().toISOString();
-    const event={id:crypto.randomUUID(),ids:selected,action,reviewer:name,reason:note,at};
+    const lookup=new Map(data.value.points.map(p=>[p.id,p]));
+    const points=selected.map(id=>{
+      const p=lookup.get(id);
+      return {id,x:p.x,y:p.y,source:p.source||'',url:p.url||''};
+    });
+    const event={id:crypto.randomUUID(),ids:selected,points,action,reviewer:name,reason:note,at};
     for(const p of selected)review.points[p]={excluded:action==='exclude',reviewer:name,reason:note,at};
     review.history.push(event);
     const onlyIf=current?{etagMatches:current.etag}:{etagDoesNotMatch:'*'};
@@ -197,6 +256,7 @@ async function handle(request,env){
       : json({ok:true},200,{'set-cookie':cookie(request,'',0)});
     if(!path.startsWith('/api/'))return errors('Ruta no encontrada',404);
     if(!await authenticated(request,env))return errors('Inicia sesión para continuar',401);
+    if(path==='/api/reviews'&&request.method==='GET')return await reviewHistory(env.BUCKET,url);
     const thematic=path.match(thematicRoute);
     if(thematic&&request.method==='GET')return serveThematic(request,env,thematic[1]);
     const reference=path.match(referenceRoute);
