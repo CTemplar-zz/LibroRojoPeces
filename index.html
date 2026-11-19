@@ -1,11 +1,12 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-FK2caiZ24QyFqaCr3SI9lFfyl7t3+J+ice9of1adTbI=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: https://unpkg.com https://services.arcgisonline.com; connect-src https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-5RegDjczhZN22DLf1qF6a3RVKBJTEMDtx7jvYCZ3V+E=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data: https://unpkg.com https://services.arcgisonline.com; connect-src https://unpkg.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; base-uri 'none'; form-action 'none'">
 <title>Libro Rojo de Peces de Bolivia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/geotiff@2.1.3/dist-browser/geotiff.js"></script>
 <style>
 :root{--paper:#f9f8f3;--ink:#19372f;--muted:#587069;--line:#d9e1d8;--pine:#123a31;--accent:#a16a27;--soft:#ecf2e9}
 *{box-sizing:border-box}body{margin:0;font:14px "DM Sans",sans-serif;background:var(--paper);color:var(--ink)}[hidden]{display:none!important}button,input,textarea,select{font:inherit;color:inherit}button,select{cursor:pointer}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #c1853a;outline-offset:2px}h1,h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;margin:0}button,input,select,textarea{border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px 10px}button:hover{background:var(--soft)}button.primary{background:var(--pine);color:white;border-color:var(--pine);font-weight:700}button.primary:hover{background:#226251}a{color:#176247}small,.muted{color:var(--muted)}p{margin:.35em 0 .75em}.note{font-size:12px;color:var(--muted)}
@@ -15,13 +16,19 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 .map-panel{display:flex;flex-direction:column;min-height:0;position:relative}.map-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;background:#edf1e9;border-bottom:1px solid var(--line);z-index:2}.map-tools button,.map-tools select{font-size:12px}.map-tools label{font-size:12px;display:flex;align-items:center;gap:2px;padding:0 3px}#map{flex:1;min-height:300px;background:#e3ebe1}.map-caption{padding:7px 10px;border-top:1px solid var(--line);font-size:11px;background:var(--paper);color:var(--muted)}.map-area{border:1px solid #007f71;background:#90d6ca66;display:inline-block;width:14px;height:9px;margin-right:5px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;flex:none}.total{font:40px/1 "Instrument Serif",Georgia;margin-right:8px}.section{border-top:1px solid var(--line);padding-top:11px;margin-top:13px}.section h3{margin:0 0 6px;font-size:14px}.source{display:flex;align-items:center;justify-content:space-between;padding:4px 0;gap:6px}.source label{display:flex;align-items:center;gap:3px;cursor:pointer}.source input{margin:0 3px 0 0}.point-list{max-height:218px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.point{display:flex;align-items:center;gap:6px;padding:6px;border-bottom:1px solid #edf0ea}.point button{border:0;background:none;text-align:left;padding:2px 5px;flex:1}.point button:hover{background:var(--soft)}.point small{display:block;font-size:11px}#point-info{display:grid;gap:4px;overflow-wrap:anywhere}.review label{display:block;margin:7px 0 3px}.review input,.review textarea{width:100%}.review textarea{min-height:60px;resize:vertical}.actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.actions button{font-size:12px}.history{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.right .topline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}details{margin-top:9px}summary{cursor:pointer;color:var(--muted)}.leaflet-container{font-family:"DM Sans",sans-serif}
 .map-line{display:inline-block;width:14px;border-top:2px solid;margin:0 4px 2px 10px}.department-line{border-top:2px dashed #d9a74d}.river-line{border-color:#429bff}
 .river-label{color:#bde4ff;font-size:11px;font-weight:700;font-style:italic;white-space:nowrap;width:max-content!important;height:auto!important;transform-origin:center;text-shadow:-1px -1px 0 #142c4a,1px -1px 0 #142c4a,-1px 1px 0 #142c4a,1px 1px 0 #142c4a;pointer-events:none}.river-label span{display:block;transform:translate(-50%,-50%)}
+.thematic-control{position:absolute;top:94px;right:10px;z-index:500;background:#f9fcf8f5;color:var(--ink);border:1px solid #b9cbbd;border-radius:9px;padding:10px 12px;box-shadow:0 3px 12px #142a2633;max-width:270px;max-height:58%;overflow:auto;font-size:14px}
+.thematic-control>summary{font-weight:700;color:var(--ink);margin:0}.thematic-layer{border-top:1px solid var(--line);margin-top:9px;padding-top:8px}.thematic-layer label{display:flex;align-items:center;gap:5px}.thematic-layer input[type=range]{padding:0;width:110px}.thematic-layer small{font-size:12px}.thematic-legend{display:grid;gap:3px;margin-top:6px;font-size:12px}.thematic-swatch{display:inline-block;width:16px;height:10px;border:1px solid #687e7644;margin-right:5px}.thematic-opacity{font-size:12px;margin:6px 0}.thematic-status{font-size:12px;color:#9a3624;overflow-wrap:anywhere}
 @media(max-width:990px){.layout{grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(250px,280px)}header{padding:12px}.right{padding:12px}}@media(max-width:700px){#portal{height:auto;min-height:100dvh}.layout{display:flex;flex-direction:column}.left{max-height:250px;border:0}.left-head{padding:10px 12px 6px}.left h2{font-size:25px}.left input{width:52%;margin-right:5px}.left select{width:42%}.right{border:0}.map-panel{height:60dvh;min-height:370px}.right .point-list{max-height:220px}header h1{font-size:25px}}
 </style></head><body>
 <main id="login" hidden><form id="login-form" class="loginCard" method="post"><p class="muted">BOLIVIA · ICTIOFAUNA</p><h1>Libro Rojo<br>de Peces</h1><p class="muted">Geoportal de distribución y revisión de registros</p><label>Usuario<input name="user" autocomplete="username" required maxlength="128"></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button class="primary">Ingresar</button><p id="login-msg" role="status"></p></form></main>
 <main id="portal" hidden><header><div><div class="kicker">Biodiversidad de Bolivia</div><h1>Libro Rojo de Peces</h1></div><button id="logout">Cerrar sesión</button></header>
 <div class="layout">
 <aside class="left" aria-label="Catálogo de especies"><div class="left-head"><h2>Especies</h2><small id="species-count"></small><input id="search" type="search" placeholder="Buscar especie o familia" aria-label="Buscar especie o familia"><select id="category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select></div><div id="species-list"></div></aside>
-<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="satellite" selected>Satelital</option><option value="relief">Relieve</option><option value="topographic">Topográfico</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-departments" checked> Límites departamentales</label><label><input type="checkbox" id="show-rivers" checked> Ríos</label><label><input type="checkbox" id="show-excluded"> Ver excluidos</label></div><div id="map" aria-label="Mapa interactivo"></div><div class="map-caption"><span class="map-area"></span>Área UICN <span class="map-line department-line"></span>Límite departamental <span class="map-line river-line"></span>Río · Círculos por fuente <span id="ref-status" role="status"></span></div></section>
+<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="satellite" selected>Satelital</option><option value="relief">Relieve</option><option value="topographic">Topográfico</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-departments" checked> Límites departamentales</label><label><input type="checkbox" id="show-rivers" checked> Ríos</label><label><input type="checkbox" id="show-excluded"> Ver excluidos</label></div><div id="map" aria-label="Mapa interactivo"></div><details class="thematic-control" open><summary>Capas ambientales</summary>
+<div class="thematic-layer"><label><input type="checkbox" id="show-basins"> Cuencas HydroSHEDS · nivel 5</label><div id="legend-basins" class="thematic-legend" hidden><span><i class="thematic-swatch" style="background:#b68aff44;border-color:#ac80ec"></i>Límite de cuenca</span><small>Selecciona una cuenca para ver su nombre y código. Dos registros de origen carecen de geometría.</small></div></div>
+<div class="thematic-layer"><label><input type="checkbox" id="show-deforestation"> Deforestación · 2016–2025</label><div id="legend-deforestation" hidden><label class="thematic-opacity">Opacidad <input type="range" id="opacity-deforestation" aria-label="Opacidad de deforestación" min="10" max="100" value="80"><output id="percent-deforestation">80 %</output></label><div class="thematic-legend"><span><i class="thematic-swatch" style="background:#ffd166"></i>1</span><span><i class="thematic-swatch" style="background:#f99638"></i>2</span><span><i class="thematic-swatch" style="background:#ed542d"></i>3</span><span><i class="thematic-swatch" style="background:#a51a25"></i>4</span></div></div></div>
+<div class="thematic-layer"><label><input type="checkbox" id="show-fire"> Frecuencia de quemas · 2016–2025</label><div id="legend-fire" hidden><label class="thematic-opacity">Opacidad <input type="range" id="opacity-fire" aria-label="Opacidad de quemas" min="10" max="100" value="80"><output id="percent-fire">80 %</output></label><div class="thematic-legend"><span><i class="thematic-swatch" style="background:#d6b5fa"></i>1</span><span><i class="thematic-swatch" style="background:#b27bda"></i>2–3</span><span><i class="thematic-swatch" style="background:#8646b4"></i>4–6</span><span><i class="thematic-swatch" style="background:#542078"></i>7–10</span></div></div></div>
+<p class="note">Los colores representan valores de frecuencia de los archivos originales. Sin dato y valor 0 son transparentes. Acércate para consultar mayor detalle.</p><div id="thematic-status" class="thematic-status" role="status"></div></details><div class="map-caption"><span class="map-area"></span>Área UICN <span class="map-line department-line"></span>Límite departamental <span class="map-line river-line"></span>Río · Círculos por fuente <span id="ref-status" role="status"></span></div></section>
 <aside class="right" aria-label="Observaciones y revisión">
 <div class="topline"><h2 id="species-name">Selecciona una especie</h2><span class="badge" id="species-cat"></span></div><div id="species-meta" class="note"></div><p id="status" role="status"></p>
 <div id="species-info" hidden><section class="section"><span id="total" class="total"></span><span id="total-label"></span><div id="sources"></div></section>
@@ -43,6 +50,23 @@ const palette={'ICTIO':'#237ccb','AmazFish':'#db713e','iNaturalist':'#2b9b66','G
 let catalog=[], current=null, map, baselayer, areas, markers, loadSeq=0, limit=60, busy=false, lastPoint=null;
 let departmentLayer,rivers,riverLabels,referenceSeq=0,riverCredit=false;
 const referenceCache=new Map();
+let basinLayer;
+const rasterLayers=new Map(),tiffFiles=new Map();
+let rasterJobs=0;
+const rasterQueue=[];
+function rasterTask(job){
+  return new Promise((resolve,reject)=>{rasterQueue.push({job,resolve,reject});drainRasters();});
+}
+function drainRasters(){
+  while(rasterJobs<3&&rasterQueue.length){
+    const {job,resolve,reject}=rasterQueue.shift();
+    rasterJobs++;
+    Promise.resolve().then(job).then(resolve,reject).finally(()=>{rasterJobs--;drainRasters();});
+  }
+}
+function thematicError(error){
+  $('thematic-status').textContent='No se pudo cargar una capa ambiental. Desactívala y vuelve a activarla.';
+}
 const osmCredit='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
 const selected=new Set(), filters=new Set(Object.keys(palette));
 const esriServices='https://services.arcgisonline.com/ArcGIS/rest/services/';
@@ -78,10 +102,10 @@ function changeBase(){
 function initMap(){
   if(map){map.invalidateSize();return;}
   map=L.map('map',{preferCanvas:true,minZoom:3}).setView([-16.5,-64.7],5);
-  for(const [name,z] of [['departments',365],['rivers',375],['river-labels',410]]){
+  for(const [name,z] of [['deforestation',330],['fire',335],['basins',360],['departments',365],['rivers',375],['river-labels',410]]){
     const pane=map.createPane(name);
     pane.style.zIndex=z;
-    pane.style.pointerEvents='none';
+    pane.style.pointerEvents=name==='basins'?'auto':'none';
   }
   changeBase();
   areas=L.featureGroup().addTo(map);
@@ -91,6 +115,78 @@ function initMap(){
   map.on('moveend',()=>{if(current)renderPointList();renderRivers();});
   renderDepartments();
   renderRivers();
+}
+async function renderBasins(){
+  const on=$('show-basins').checked;
+  $('legend-basins').hidden=!on;
+  if(!on){if(basinLayer)basinLayer.remove();return;}
+  try{
+    const data=await api('/api/thematic/basins');
+    if(!$('show-basins').checked)return;
+    basinLayer ||= L.geoJSON(data,{pane:'basins',style:{color:'#b895f4',weight:1.5,fillColor:'#a277d6',fillOpacity:.07},
+      onEachFeature:(feature,layer)=>{
+        const p=feature.properties;
+        const text=node('div');
+        text.append(node('strong',p.name),node('p','Código '+p.code+' · HydroSHEDS nivel 5'));
+        layer.bindPopup(text);
+      }});
+    basinLayer.addTo(map);
+  }catch(e){thematicError(e);}
+}
+function openTiff(key){
+  if(tiffFiles.has(key))return tiffFiles.get(key);
+  const headers=apiOrigin?{Authorization:'Bearer '+pagesSession}:{};
+  const pending=GeoTIFF.fromUrl(apiOrigin+'/api/thematic/'+key+'.tif',{
+    headers,allowFullFile:false,blockSize:65536,cacheSize:96,maxRanges:1
+  }).then(async tiff=>({tiff,bbox:(await tiff.getImage()).getBoundingBox()})).catch(e=>{tiffFiles.delete(key);throw e;});
+  tiffFiles.set(key,pending);
+  return pending;
+}
+function rasterColor(key,value){
+  if(value<1)return null;
+  if(key==='deforestation')return [[255,209,102],[249,150,56],[237,84,45],[165,26,37]][Math.min(3,value-1)];
+  return value===1?[214,181,250]:value<=3?[178,123,218]:value<=6?[134,70,180]:[84,32,120];
+}
+const FrequencyLayer=L.GridLayer.extend({
+  createTile(coords,done){
+    const canvas=document.createElement('canvas');
+    canvas.width=canvas.height=256;
+    const key=this.options.layerKey;
+    rasterTask(async()=>{
+      if(!this._map)return;
+      const {tiff,bbox}=await openTiff(key);
+      if(!this._map)return;
+      const b=this._tileCoordsToBounds(coords);
+      const sw=L.CRS.EPSG3857.project(b.getSouthWest()),ne=L.CRS.EPSG3857.project(b.getNorthEast());
+      const requested=[sw.x,sw.y,ne.x,ne.y];
+      const clipped=[Math.max(sw.x,bbox[0]),Math.max(sw.y,bbox[1]),Math.min(ne.x,bbox[2]),Math.min(ne.y,bbox[3])];
+      if(clipped[0]>=clipped[2]||clipped[1]>=clipped[3])return;
+      const scale=256/(ne.x-sw.x);
+      const x=Math.floor((clipped[0]-sw.x)*scale),y=Math.floor((ne.y-clipped[3])*scale);
+      const w=Math.max(1,Math.min(256-x,Math.ceil((clipped[2]-clipped[0])*scale)));
+      const h=Math.max(1,Math.min(256-y,Math.ceil((clipped[3]-clipped[1])*scale)));
+      const values=await tiff.readRasters({bbox:clipped,width:w,height:h,samples:[0],interleave:true,resampleMethod:'nearest',fillValue:0});
+      const ctx=canvas.getContext('2d'),image=ctx.createImageData(w,h);
+      for(let i=0;i<values.length;i++){
+        const color=rasterColor(key,values[i]);
+        if(!color)continue;
+        image.data.set([...color,255],i*4);
+      }
+      ctx.putImageData(image,x,y);
+    }).then(()=>done(null,canvas)).catch(e=>{thematicError(e);done(e,canvas);});
+    return canvas;
+  }
+});
+function renderRaster(key){
+  const on=$('show-'+key).checked;
+  $('legend-'+key).hidden=!on;
+  if(!on){rasterLayers.get(key)?.remove();return;}
+  $('thematic-status').textContent='';
+  if(!rasterLayers.has(key)){
+    rasterLayers.set(key,new FrequencyLayer({layerKey:key,pane:key,tileSize:256,opacity:.8,maxZoom:19,
+      bounds:[[-24,-71],[-9,-56]],keepBuffer:1,updateWhenIdle:true,updateWhenZooming:false}));
+  }
+  rasterLayers.get(key).addTo(map);
 }
 function reference(key){
   if(referenceCache.has(key)){
@@ -199,6 +295,15 @@ $('search').oninput=renderCatalog;$('category').onchange=renderCatalog;$('basema
 $('show-area').onchange=()=>{if(current)renderAreas();};
 $('show-departments').onchange=renderDepartments;
 $('show-rivers').onchange=renderRivers;
+$('show-basins').onchange=renderBasins;
+for(const key of ['deforestation','fire']){
+  $('show-'+key).onchange=()=>renderRaster(key);
+  $('opacity-'+key).oninput=()=>{
+    const value=Number($('opacity-'+key).value);
+    $('percent-'+key).value=value+' %';
+    rasterLayers.get(key)?.setOpacity(value/100);
+  };
+}
 $('show-excluded').onchange=()=>{if(!current)return;if(!$('show-excluded').checked)for(const id of selected)if(reviewOf(id)?.excluded)selected.delete(id);renderMarkers();renderPointList();};
 $('select-view').onclick=()=>{for(const p of shown())if(map.getBounds().contains([p.y,p.x]))selected.add(p.id);renderMarkers();renderPointList();};
 $('clear').onclick=()=>{selected.clear();renderMarkers();renderPointList();};

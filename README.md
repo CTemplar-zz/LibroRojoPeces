@@ -23,3 +23,12 @@ Se publican las categorías de la lista Excel, con prioridad para la propuesta n
 ### Capas de referencia
 
 El mapa abre con World Imagery de Esri. La capa departamental y las líneas de OSM se leen del almacén privado `reference/v1/`. Para provisionar una copia del sitio, carga primero `departments`, `overview`, `regional` y los JSON de la cuadrícula mediante `PUT /api/import-reference/{key}`, con un secreto independiente `REFERENCE_IMPORT_TOKEN`. Carga `index` al final para cerrar la importación. El índice contiene la lista de claves de cuadrícula y los recuentos.
+
+### Cuencas y frecuencia de amenazas
+
+Las capas ambientales se guardan en el bucket privado bajo thematic/20261119. El origen HydroATLAS_Nivel05_Bolivia contiene 23 registros, de los cuales 21 tienen geometría. El portal muestra esos 21 polígonos. La tabla de atributos proporciona los nombres y códigos.
+
+Los dos rásteres originales se reproyectaron a EPSG:3857 con celdas de 30 m y vecino más próximo. Los archivos COG incluyen vistas de menor resolución mediante el mismo remuestreo. El portal lee porciones mediante HTTP Range y GeoTIFF.js 2.1.3, sin interpolar los valores de frecuencia. El valor 0 es NoData en ambos archivos y se dibuja transparente. Las vistas lejanas son representaciones generalizadas y no deben usarse para calcular áreas.
+
+Para provisionar otra instancia, configurar THEMATIC_IMPORT_TOKEN como secreto de servidor y cargar basins, deforestation.tif y fire.tif mediante PUT /api/import-thematic/{key}. Cargar manifest al final cierra la importación. Los cambios de revisión de especies usan un prefijo independiente.
+

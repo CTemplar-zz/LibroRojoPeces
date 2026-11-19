@@ -19,6 +19,48 @@ const cookieName='libro_rojo';
 const pagesOrigin='https://ctemplar-zz.github.io';
 const referenceKey=/^(?:index|departments|overview|regional|g-\d{1,3}-\d{1,3})$/;
 const referenceRoute=/^\/api\/reference\/([^/]+)$/;
+const thematicRoute=/^\/api\/thematic\/(basins|manifest|deforestation\.tif|fire\.tif)$/;
+const thematicObject=key=>'thematic/20261119/'+key;
+async function seedThematic(request,env,key){
+  if(!env.THEMATIC_IMPORT_TOKEN||!await safeEqual(request.headers.get('authorization')||'','Bearer '+env.THEMATIC_IMPORT_TOKEN))return errors('Acceso restringido',401);
+  if(await env.BUCKET.head(thematicObject('manifest')))return errors('Las capas temáticas ya están publicadas',409);
+  if(key==='manifest'){
+    const data=await request.json();
+    if(data.basins!==21||!Array.isArray(data.rasters)||data.rasters.length!==2)return errors('Manifiesto inválido',400);
+    for(const name of ['basins','deforestation.tif','fire.tif'])if(!await env.BUCKET.head(thematicObject(name)))return errors('Falta una capa',409);
+    return json({stored:!!await env.BUCKET.put(thematicObject(key),JSON.stringify(data),{onlyIf:{etagDoesNotMatch:'*'}})});
+  }
+  if(key==='basins'){
+    const raw=await request.text(),data=JSON.parse(raw);
+    if(data.type!=='FeatureCollection'||data.features?.length!==21)return errors('Cuencas inválidas',400);
+    await env.BUCKET.put(thematicObject(key),raw);
+  }else{
+    const length=Number(request.headers.get('content-length'));
+    if(!length||length>100_000_000)return errors('Tamaño de ráster no permitido',413);
+    await env.BUCKET.put(thematicObject(key),request.body,{httpMetadata:{contentType:'image/tiff'}});
+  }
+  return json({stored:true});
+}
+async function serveThematic(request,env,key){
+  if(!key.endsWith('.tif')){
+    const obj=await env.BUCKET.get(thematicObject(key));
+    return obj?new Response(obj.body,{headers:{...headers,'content-type':'application/json; charset=utf-8'}}):errors('Capa no disponible',404);
+  }
+  const meta=await env.BUCKET.head(thematicObject(key));
+  if(!meta)return errors('Ráster no disponible',404);
+  const h={...headers,'content-type':'image/tiff','accept-ranges':'bytes'};
+  const range=request.headers.get('range');
+  if(!range)return errors('El ráster requiere lectura por rangos',400);
+  const parsed=range.match(/^bytes=(\d+)-(\d*)$/);
+  if(!parsed)return new Response(null,{status:416,headers:{...h,'content-range':'bytes */'+meta.size}});
+  const offset=Number(parsed[1]),end=parsed[2]?Math.min(Number(parsed[2]),meta.size-1):meta.size-1;
+  if(!Number.isSafeInteger(offset)||!Number.isSafeInteger(end)||offset>end||offset>=meta.size)return new Response(null,{status:416,headers:{...h,'content-range':'bytes */'+meta.size}});
+  const length=end-offset+1;
+  if(length>8_000_000)return errors('Rango demasiado grande',413);
+  const obj=await env.BUCKET.get(thematicObject(key),{range:{offset,length}});
+  return new Response(obj.body,{status:206,headers:{...h,'content-range':'bytes '+offset+'-'+end+'/'+meta.size,'content-length':String(length)}});
+}
+
 const pagesPath=/^\/api\/(?:catalog|login|logout|species\/[a-z][a-z-]{2,100}(?:\/review)?)$/;
 const referenceObject=key=>'reference/v1/'+key;
 const tokenPattern=/^\d+\.[a-f0-9]{32}\.[a-f0-9]{64}$/;
@@ -27,9 +69,10 @@ function cors(response,preflight=false) {
   const headers=new Headers(response.headers);
   headers.set('access-control-allow-origin',pagesOrigin);
   headers.append('vary','Origin');
+  headers.set('access-control-expose-headers','Content-Range, Accept-Ranges, Content-Length');
   if(preflight) {
     headers.set('access-control-allow-methods','GET, POST');
-    headers.set('access-control-allow-headers','Authorization, Content-Type');
+    headers.set('access-control-allow-headers','Authorization, Content-Type, Range');
     headers.append('vary','Access-Control-Request-Method, Access-Control-Request-Headers');
   }
   return new Response(response.body,{status:response.status,headers});
@@ -120,6 +163,10 @@ async function handle(request,env){
   const path=url.pathname;
   try {
     if(path==='/'&&request.method==='GET')return new Response(html,{headers:{...headers,'content-type':'text/html; charset=utf-8'}});
+    if(path.startsWith('/api/import-thematic/')&&request.method==='PUT'){
+      const key=path.split('/').at(-1);
+      return /^(basins|manifest|deforestation\.tif|fire\.tif)$/.test(key)?await seedThematic(request,env,key):errors('Ruta incorrecta',404);
+    }
     if(path.startsWith('/api/import-reference/')&&request.method==='PUT'){
       const key=path.split('/').at(-1);
       return referenceKey.test(key)?await seedReference(request,env,key):errors('Ruta incorrecta',404);
@@ -150,6 +197,8 @@ async function handle(request,env){
       : json({ok:true},200,{'set-cookie':cookie(request,'',0)});
     if(!path.startsWith('/api/'))return errors('Ruta no encontrada',404);
     if(!await authenticated(request,env))return errors('Inicia sesión para continuar',401);
+    const thematic=path.match(thematicRoute);
+    if(thematic&&request.method==='GET')return serveThematic(request,env,thematic[1]);
     const reference=path.match(referenceRoute);
     if(reference&&referenceKey.test(reference[1])&&request.method==='GET'){
       const obj=await env.BUCKET.get(referenceObject(reference[1]));
@@ -179,11 +228,11 @@ export default {async fetch(request,env){
   if(!fromPages(request))return handle(request,env);
   const {pathname}=new URL(request.url);
   const reference=pathname.match(referenceRoute);
-  if(!pagesPath.test(pathname)&&!(reference&&referenceKey.test(reference[1])))return errors('Ruta no encontrada',404);
+  if(!pagesPath.test(pathname)&&!(reference&&referenceKey.test(reference[1]))&&!thematicRoute.test(pathname))return errors('Ruta no encontrada',404);
   if(request.method==='OPTIONS'){
     const method=request.headers.get('access-control-request-method');
     const requested=(request.headers.get('access-control-request-headers')||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);
-    if(!['GET','POST'].includes(method)||requested.some(h=>!['authorization','content-type'].includes(h)))return errors('Solicitud no permitida',403);
+    if(!['GET','POST'].includes(method)||requested.some(h=>!['authorization','content-type','range'].includes(h)))return errors('Solicitud no permitida',403);
     return cors(new Response(null,{status:204,headers}),true);
   }
   if(!['GET','POST'].includes(request.method))return cors(errors('Método no permitido',405));

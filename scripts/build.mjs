@@ -12,7 +12,7 @@ if(process.argv.includes('--pages')||process.argv.includes('--check-pages')){
   const page=html.replace("const apiOrigin='';","const apiOrigin='"+portal+"';").replace(/\r\n/g,'\n');
   const script=page.match(/<script>([\s\S]*?)<\/script>/)[1];
   const hash=createHash('sha256').update(script).digest('base64');
-  const policy="default-src 'none'; script-src 'sha256-"+hash+"' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: https://unpkg.com https://services.arcgisonline.com; connect-src "+portal+"; base-uri 'none'; form-action 'none'";
+  const policy="default-src 'none'; script-src 'sha256-"+hash+"' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data: https://unpkg.com https://services.arcgisonline.com; connect-src https://unpkg.com "+portal+"; base-uri 'none'; form-action 'none'";
   const output=page.replace('<!-- GitHub Pages security policy -->','<meta http-equiv="Content-Security-Policy" content="'+policy+'">');
   if(process.argv.includes('--check-pages')){
     const current=(await fs.readFile('index.html','utf8')).replace(/\r\n/g,'\n');
