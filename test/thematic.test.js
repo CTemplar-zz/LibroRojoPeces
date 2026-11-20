@@ -37,3 +37,36 @@ test('capas temáticas protegidas y lectura de ráster por rangos desde GitHub',
   assert.equal((await basins.json()).type,'FeatureCollection');
 });
 
+test('importación de minería con secreto, geometrías válidas y cierre tras publicar',async()=>{
+  const data=new Map();
+  const BUCKET={
+    async head(key){return data.has(key)?{size:data.get(key).length}:null;},
+    async get(key){return data.has(key)?{body:data.get(key)}:null;},
+    async put(key,value,{onlyIf}={}){if(onlyIf?.etagDoesNotMatch==='*'&&data.has(key))return null;data.set(key,value);return {etag:'mining'};},
+  };
+  const env={BUCKET,MINING_IMPORT_TOKEN:'test-import',SESSION_SECRET:'secret-test',PORTAL_USER:'user-test',PORTAL_PASSWORD:'password-test'};
+  const go=(path,opts)=>worker.fetch(new Request('https://test.invalid'+path,opts),env);
+  const feature={type:'Feature',properties:{id:0,ANIO:2025,MINED_HA:10.54,PERIODO:'Q3',nombre_ap:'Madidi'},geometry:{type:'Polygon',coordinates:[[[-68,-14],[-67.99,-14],[-68,-13.99],[-68,-14]]]}};
+  const layer={type:'FeatureCollection',features:[feature]};
+  const upload=(value,authorization='Bearer test-import')=>go('/api/import-mining',{method:'PUT',headers:{authorization},body:JSON.stringify(value)});
+  assert.equal((await upload(layer,'Bearer incorrect')).status,401);
+  assert.equal((await go('/api/thematic/mining')).status,401);
+  const invalid=structuredClone(layer);invalid.features[0].geometry.coordinates[0][0][0]=300;
+  assert.equal((await upload(invalid)).status,400);
+  assert.equal((await upload({...layer,features:[]})).status,400);
+  const imported=await upload(layer);
+  assert.equal(imported.status,200);
+  assert.deepEqual(await imported.json(),{stored:true,features:1});
+  assert.equal((await upload(layer)).status,409);
+  const origin='https://ctemplar-zz.github.io';
+  const login=await go('/api/login',{method:'POST',headers:{origin},body:JSON.stringify({user:'user-test',password:'password-test'})});
+  const {token}=await login.json();
+  const response=await go('/api/thematic/mining',{headers:{origin,authorization:'Bearer '+token}});
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get('access-control-allow-origin'),origin);
+  assert.deepEqual(await response.json(),layer);
+  assert.equal((await go('/api/import-mining',{method:'OPTIONS',headers:{origin,'access-control-request-method':'PUT'}})).status,404);
+  assert.equal(data.size,1);
+  assert.ok(data.has('thematic/20261120/mining'));
+});
+

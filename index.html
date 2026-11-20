@@ -1,6 +1,6 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-9MCEM/y2ujceK+ajOIwuio+8RpgT0hsgdI7VbgCxK5I=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data: https://unpkg.com https://services.arcgisonline.com; connect-src https://unpkg.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7aRcIqgF6mLfEgkiQ9JueSaLS98sw+Yr5uhHFLILRtI=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data: https://unpkg.com https://services.arcgisonline.com; connect-src https://unpkg.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; base-uri 'none'; form-action 'none'">
 <title>Libro Rojo de Peces de Bolivia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 .river-label{color:#bde4ff;font-size:11px;font-weight:700;font-style:italic;white-space:nowrap;width:max-content!important;height:auto!important;transform-origin:center;text-shadow:-1px -1px 0 #142c4a,1px -1px 0 #142c4a,-1px 1px 0 #142c4a,1px 1px 0 #142c4a;pointer-events:none}.river-label span{display:block;transform:translate(-50%,-50%)}
 .thematic-control{position:absolute;top:94px;right:10px;z-index:500;background:#f9fcf8f5;color:var(--ink);border:1px solid #b9cbbd;border-radius:9px;padding:10px 12px;box-shadow:0 3px 12px #142a2633;max-width:270px;max-height:58%;overflow:auto;font-size:14px}
 .thematic-control>summary{font-weight:700;color:var(--ink);margin:0}.thematic-layer{border-top:1px solid var(--line);margin-top:9px;padding-top:8px}.thematic-layer label{display:flex;align-items:center;gap:5px}.thematic-layer input[type=range]{padding:0;width:110px}.thematic-layer small{font-size:12px}.thematic-legend{display:grid;gap:3px;margin-top:6px;font-size:12px}.thematic-swatch{display:inline-block;width:16px;height:10px;border:1px solid #687e7644;margin-right:5px}.thematic-opacity{font-size:12px;margin:6px 0}.thematic-status{font-size:12px;color:#9a3624;overflow-wrap:anywhere}
+.basin-label{background:transparent;border:0;box-shadow:none;color:#f5ecff;font:700 12px/1.2 "DM Sans",sans-serif;text-align:center;white-space:normal;width:150px;max-width:150px;text-shadow:-1px -1px 2px #222a40,1px 1px 2px #222a40,-1px 1px 2px #222a40,1px -1px 2px #222a40;pointer-events:none}.basin-label::before{display:none}.mining-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px}.mining-tools button{font-size:12px}
 .excluded-key{display:inline-flex;align-items:center;font-size:12px}.excluded-dot{background:#e32636;border:1px solid #971524}.review-point{padding:8px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.review-point p{margin:3px 0}.review-point button{font-size:12px}.review-state{color:#a82030;font-weight:700}
 #all-history{width:min(920px,94vw);max-height:88dvh;overflow:auto;border:1px solid #bacbbb;border-radius:12px;padding:20px;background:var(--paper);color:var(--ink)}#all-history::backdrop{background:#09251ecc}.history-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.history-heading h2{font-size:32px}.history-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.history-filters label{display:grid;gap:5px;flex:1;min-width:180px}#all-history-list{max-height:53dvh;overflow:auto}#all-history-list article{border-bottom:1px solid var(--line);padding:12px 0;overflow-wrap:anywhere}
 @media(max-width:990px){.layout{grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(250px,280px)}header{padding:12px}.right{padding:12px}}@media(max-width:700px){#portal{height:auto;min-height:100dvh}.layout{display:flex;flex-direction:column}.left{max-height:250px;border:0}.left-head{padding:10px 12px 6px}.left h2{font-size:25px}.left input{width:52%;margin-right:5px}.left select{width:42%}.right{border:0}.map-panel{height:60dvh;min-height:370px}.right .point-list{max-height:220px}header h1{font-size:25px}}
@@ -27,7 +28,8 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 <div class="layout">
 <aside class="left" aria-label="Catálogo de especies"><div class="left-head"><h2>Especies</h2><small id="species-count"></small><input id="search" type="search" placeholder="Buscar especie o familia" aria-label="Buscar especie o familia"><select id="category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select></div><div id="species-list"></div></aside>
 <section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="satellite" selected>Satelital</option><option value="relief">Relieve</option><option value="topographic">Topográfico</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-departments" checked> Límites departamentales</label><label><input type="checkbox" id="show-rivers" checked> Ríos</label><span class="excluded-key"><i class="dot excluded-dot"></i>Exclusión propuesta</span></div><div id="map" aria-label="Mapa interactivo"></div><details class="thematic-control" open><summary>Capas ambientales</summary>
-<div class="thematic-layer"><label><input type="checkbox" id="show-basins"> Cuencas HydroSHEDS · nivel 5</label><div id="legend-basins" class="thematic-legend" hidden><span><i class="thematic-swatch" style="background:#b68aff44;border-color:#ac80ec"></i>Límite de cuenca</span><small>Selecciona una cuenca para ver su nombre y código. Dos registros de origen carecen de geometría.</small></div></div>
+<div class="thematic-layer"><label><input type="checkbox" id="show-basins"> Cuencas HydroSHEDS · nivel 5</label><div id="legend-basins" class="thematic-legend" hidden><span><i class="thematic-swatch" style="background:#a277d61f;border-color:#ac80ec"></i>Cuenca · 88 % de transparencia</span><small>Nombres visibles sobre el mapa. Selecciona una cuenca para consultar su código. Dos registros de origen carecen de geometría.</small></div></div>
+<div class="thematic-layer"><label><input type="checkbox" id="show-mining"> Minería ilegal</label><div id="legend-mining" class="thematic-legend" hidden><span><i class="thematic-swatch" style="background:#ffc24c66;border-color:#ffac26"></i>Áreas registradas · 2018–2025</span><small id="mining-count"></small><small>Selecciona un polígono para consultar año, período, superficie y área protegida.</small><div class="mining-tools"><button id="fit-mining" type="button">Ver extensión</button></div></div></div>
 <div class="thematic-layer"><label><input type="checkbox" id="show-deforestation"> Deforestación · 2016–2025</label><div id="legend-deforestation" hidden><label class="thematic-opacity">Opacidad <input type="range" id="opacity-deforestation" aria-label="Opacidad de deforestación" min="10" max="100" value="80"><output id="percent-deforestation">80 %</output></label><div class="thematic-legend"><span><i class="thematic-swatch" style="background:#ffd166"></i>1</span><span><i class="thematic-swatch" style="background:#f99638"></i>2</span><span><i class="thematic-swatch" style="background:#ed542d"></i>3</span><span><i class="thematic-swatch" style="background:#a51a25"></i>4</span></div></div></div>
 <div class="thematic-layer"><label><input type="checkbox" id="show-fire"> Frecuencia de quemas · 2016–2025</label><div id="legend-fire" hidden><label class="thematic-opacity">Opacidad <input type="range" id="opacity-fire" aria-label="Opacidad de quemas" min="10" max="100" value="80"><output id="percent-fire">80 %</output></label><div class="thematic-legend"><span><i class="thematic-swatch" style="background:#d6b5fa"></i>1</span><span><i class="thematic-swatch" style="background:#b27bda"></i>2–3</span><span><i class="thematic-swatch" style="background:#8646b4"></i>4–6</span><span><i class="thematic-swatch" style="background:#542078"></i>7–10</span></div></div></div>
 <p class="note">Los colores representan valores de frecuencia de los archivos originales. Sin dato y valor 0 son transparentes. Acércate para consultar mayor detalle.</p><div id="thematic-status" class="thematic-status" role="status"></div></details><div class="map-caption"><span class="map-area"></span>Área UICN <span class="map-line department-line"></span>Límite departamental <span class="map-line river-line"></span>Río · Círculos por fuente <span id="ref-status" role="status"></span></div></section>
@@ -60,7 +62,8 @@ const palette={'ICTIO':'#237ccb','AmazFish':'#db713e','iNaturalist':'#2b9b66','G
 let catalog=[], current=null, map, baselayer, areas, markers, loadSeq=0, limit=60, busy=false, lastPoint=null;
 let departmentLayer,rivers,riverLabels,referenceSeq=0,riverCredit=false;
 const referenceCache=new Map();
-let basinLayer;
+let basinLayer,miningLayer,observationRenderer,areaRenderer;
+const thematicVectors=new Map();
 let historyCursor=null,historyNext=null,historySequence=0;
 let historicalMarker;
 const historyBack=[];
@@ -115,12 +118,15 @@ function changeBase(){
 function initMap(){
   if(map){map.invalidateSize();return;}
   map=L.map('map',{preferCanvas:true,minZoom:3}).setView([-16.5,-64.7],5);
-  for(const [name,z] of [['deforestation',330],['fire',335],['basins',360],['departments',365],['rivers',375],['river-labels',410]]){
+  for(const [name,z] of [['deforestation',330],['fire',335],['areas',350],['basins',360],['departments',365],['mining',370],['rivers',375],['river-labels',410],['basin-labels',415]]){
     const pane=map.createPane(name);
     pane.style.zIndex=z;
-    pane.style.pointerEvents=name==='basins'?'auto':'none';
+    pane.style.pointerEvents=['areas','basins','mining'].includes(name)?'auto':'none';
   }
   changeBase();
+  // SVG allows clicks through empty space to the interactive polygons below.
+  observationRenderer=L.svg();
+  areaRenderer=L.svg({pane:'areas'});
   areas=L.featureGroup().addTo(map);
   rivers=L.layerGroup().addTo(map);
   riverLabels=L.layerGroup().addTo(map);
@@ -129,21 +135,45 @@ function initMap(){
   renderDepartments();
   renderRivers();
 }
+function thematicVector(key){
+  if(!thematicVectors.has(key))thematicVectors.set(key,api('/api/thematic/'+key).catch(error=>{thematicVectors.delete(key);throw error;}));
+  return thematicVectors.get(key);
+}
 async function renderBasins(){
   const on=$('show-basins').checked;
   $('legend-basins').hidden=!on;
   if(!on){if(basinLayer)basinLayer.remove();return;}
   try{
-    const data=await api('/api/thematic/basins');
+    const data=await thematicVector('basins');
     if(!$('show-basins').checked)return;
-    basinLayer ||= L.geoJSON(data,{pane:'basins',style:{color:'#b895f4',weight:1.5,fillColor:'#a277d6',fillOpacity:.07},
+    basinLayer ||= L.geoJSON(data,{pane:'basins',renderer:L.svg({pane:'basins'}),style:{color:'#b895f4',weight:1.5,fillColor:'#a277d6',fillOpacity:.12},
       onEachFeature:(feature,layer)=>{
         const p=feature.properties;
         const text=node('div');
         text.append(node('strong',p.name),node('p','Código '+p.code+' · HydroSHEDS nivel 5'));
         layer.bindPopup(text);
+        layer.bindTooltip(node('span',p.name),{permanent:true,direction:'center',className:'basin-label',pane:'basin-labels',opacity:1});
       }});
     basinLayer.addTo(map);
+  }catch(e){thematicError(e);}
+}
+async function renderMining(){
+  const on=$('show-mining').checked;
+  $('legend-mining').hidden=!on;
+  if(!on){miningLayer?.remove();return;}
+  try{
+    const data=await thematicVector('mining');
+    if(!$('show-mining').checked)return;
+    miningLayer ||= L.geoJSON(data,{pane:'mining',renderer:L.svg({pane:'mining'}),style:{color:'#ffac26',weight:1.4,fillColor:'#ffc24c',fillOpacity:.4},
+      onEachFeature:(feature,layer)=>{
+        const p=feature.properties,text=node('div');
+        text.append(node('strong','Minería ilegal'),node('p','Año: '+p.ANIO+' · Período: '+(p.PERIODO||'Sin dato')),
+          node('p','Superficie registrada: '+new Intl.NumberFormat('es-BO',{maximumFractionDigits:2}).format(p.MINED_HA)+' ha'),
+          node('p','Área protegida: '+(p.nombre_ap||'No informada en el archivo')),node('p','Registro '+p.id,'note'));
+        layer.bindPopup(text);
+      }});
+    $('mining-count').textContent=number(data.features.length)+' polígonos de la capa original';
+    miningLayer.addTo(map);
   }catch(e){thematicError(e);}
 }
 function openTiff(key){
@@ -293,7 +323,7 @@ async function openSpecies(id){const seq=++loadSeq;$('status').textContent='Carg
 const reviewOf=id=>current?.review.points[id];
 const shown=()=>current.points.filter(p=>filters.has(p.source));
 function fit(){if(!current)return;const pts=shown();if(pts.length){map.fitBounds(L.latLngBounds(pts.map(p=>[p.y,p.x])),{padding:[38,38],maxZoom:12});return;}if(areas.getLayers().length&&areas.getBounds().isValid()){map.fitBounds(areas.getBounds(),{padding:[20,20],maxZoom:10});return;}map.setView([-16.5,-64.7],5);}
-function renderAreas(){areas.clearLayers();if(!$('show-area').checked)return;L.geoJSON(current.areas,{style:f=>({color:'#16867d',weight:2,fillOpacity:.17,dashArray:f.properties.review?'5 4':null}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(node('div','UICN · '+p.scientific+(p.category?' · '+p.category:'')+(p.review?' · Nombre para revisión':'')));}}).addTo(areas);}
+function renderAreas(){areas.clearLayers();if(!$('show-area').checked)return;L.geoJSON(current.areas,{pane:'areas',renderer:areaRenderer,style:f=>({color:'#16867d',weight:2,fillOpacity:.17,dashArray:f.properties.review?'5 4':null}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(node('div','UICN · '+p.scientific+(p.category?' · '+p.category:'')+(p.review?' · Nombre para revisión':'')));}}).addTo(areas);}
 function renderMarkers(){
   historicalMarker?.remove();historicalMarker=null;
   markers.clearLayers();
@@ -301,6 +331,7 @@ function renderMarkers(){
   for(const p of points){
     const excluded=!!reviewOf(p.id)?.excluded,chosen=selected.has(p.id),focused=lastPoint?.id===p.id;
     const m=L.circleMarker([p.y,p.x],{
+      renderer:observationRenderer,
       radius:chosen||focused?8:excluded?6:5,
       color:chosen?'#142f25':excluded?'#971524':focused?'#142f25':'#ffffff',
       weight:chosen||focused||excluded?2:1,fillColor:excluded?'#e32636':palette[p.source]||'#777',fillOpacity:.9,opacity:1
@@ -365,7 +396,7 @@ async function locateHistoryPoint(entry){
   if(!point||point.x!==entry.coordinate.x||point.y!==entry.coordinate.y){
     const label=node('div');
     label.append(node('strong','Ubicación guardada en el historial'),node('p','Registro '+entry.pointId),node('p','Lat. '+entry.coordinate.y.toFixed(6)+' · Lon. '+entry.coordinate.x.toFixed(6)));
-    historicalMarker=L.circleMarker([entry.coordinate.y,entry.coordinate.x],{radius:9,color:'#971524',weight:3,fillColor:'#e32636',fillOpacity:.9}).addTo(map).bindPopup(label).openPopup();
+    historicalMarker=L.circleMarker([entry.coordinate.y,entry.coordinate.x],{renderer:observationRenderer,radius:9,color:'#971524',weight:3,fillColor:'#e32636',fillOpacity:.9}).addTo(map).bindPopup(label).openPopup();
     $('status').textContent='Se muestra en rojo la ubicación guardada al realizar la revisión.';
   }
   map.setView([entry.coordinate.y,entry.coordinate.x],Math.max(map.getZoom(),13));
@@ -418,6 +449,8 @@ $('show-area').onchange=()=>{if(current)renderAreas();};
 $('show-departments').onchange=renderDepartments;
 $('show-rivers').onchange=renderRivers;
 $('show-basins').onchange=renderBasins;
+$('show-mining').onchange=renderMining;
+$('fit-mining').onclick=()=>{if(miningLayer?.getBounds().isValid())map.fitBounds(miningLayer.getBounds(),{padding:[28,28],maxZoom:11});};
 for(const key of ['deforestation','fire']){
   $('show-'+key).onchange=()=>renderRaster(key);
   $('opacity-'+key).oninput=()=>{

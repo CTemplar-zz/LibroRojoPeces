@@ -19,8 +19,24 @@ const cookieName='libro_rojo';
 const pagesOrigin='https://ctemplar-zz.github.io';
 const referenceKey=/^(?:index|departments|overview|regional|g-\d{1,3}-\d{1,3})$/;
 const referenceRoute=/^\/api\/reference\/([^/]+)$/;
-const thematicRoute=/^\/api\/thematic\/(basins|manifest|deforestation\.tif|fire\.tif)$/;
-const thematicObject=key=>'thematic/20261119/'+key;
+const thematicRoute=/^\/api\/thematic\/(basins|mining|manifest|deforestation\.tif|fire\.tif)$/;
+const thematicObject=key=>key==='mining'?'thematic/20261120/mining':'thematic/20261119/'+key;
+async function seedMining(request,env){
+  if(!env.MINING_IMPORT_TOKEN||!await safeEqual(request.headers.get('authorization')||'','Bearer '+env.MINING_IMPORT_TOKEN))return errors('Acceso restringido',401);
+  const key=thematicObject('mining');
+  if(await env.BUCKET.head(key))return errors('La capa de minería ya está publicada',409);
+  const raw=await request.text();
+  if(enc.encode(raw).length>5_000_000)return errors('Capa demasiado grande',413);
+  const data=JSON.parse(raw);
+  const validCoordinates=coords=>Array.isArray(coords)&&coords.length>0&&(typeof coords[0]==='number'
+    ?coords.length===2&&coords.every(Number.isFinite)&&Math.abs(coords[0])<=180&&Math.abs(coords[1])<=90
+    :coords.every(validCoordinates));
+  if(data.type!=='FeatureCollection'||!Array.isArray(data.features)||!data.features.length||data.features.length>10000||data.features.some(f=>
+    f.type!=='Feature'||!['Polygon','MultiPolygon'].includes(f.geometry?.type)||!validCoordinates(f.geometry.coordinates)||!f.properties||!Number.isInteger(f.properties.ANIO)||!Number.isFinite(f.properties.MINED_HA)
+  ))return errors('Polígonos de minería inválidos',400);
+  const result=await env.BUCKET.put(key,raw,{onlyIf:{etagDoesNotMatch:'*'}});
+  return result?json({stored:true,features:data.features.length}):errors('La capa de minería ya está publicada',409);
+}
 async function seedThematic(request,env,key){
   if(!env.THEMATIC_IMPORT_TOKEN||!await safeEqual(request.headers.get('authorization')||'','Bearer '+env.THEMATIC_IMPORT_TOKEN))return errors('Acceso restringido',401);
   if(await env.BUCKET.head(thematicObject('manifest')))return errors('Las capas temáticas ya están publicadas',409);
@@ -222,6 +238,7 @@ async function handle(request,env){
   const path=url.pathname;
   try {
     if(path==='/'&&request.method==='GET')return new Response(html,{headers:{...headers,'content-type':'text/html; charset=utf-8'}});
+    if(path==='/api/import-mining'&&request.method==='PUT')return await seedMining(request,env);
     if(path.startsWith('/api/import-thematic/')&&request.method==='PUT'){
       const key=path.split('/').at(-1);
       return /^(basins|manifest|deforestation\.tif|fire\.tif)$/.test(key)?await seedThematic(request,env,key):errors('Ruta incorrecta',404);

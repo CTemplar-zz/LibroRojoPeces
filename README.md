@@ -34,3 +34,7 @@ Los dos rásteres originales se reproyectaron a EPSG:3857 con celdas de 30 m y v
 
 Para provisionar otra instancia, configurar THEMATIC_IMPORT_TOKEN como secreto de servidor y cargar basins, deforestation.tif y fire.tif mediante PUT /api/import-thematic/{key}. Cargar manifest al final cierra la importación. Los cambios de revisión de especies usan un prefijo independiente.
 
+Las cuencas muestran sus nombres de forma permanente y tienen un relleno violeta con 88 % de transparencia. La capa «Minería ilegal» incorpora los 544 polígonos de `Mineria_Ilegal_AP_Todos`, con registros de 2018 a 2025, en color ámbar. Sus ventanas muestran los atributos originales `ANIO`, `PERIODO`, `MINED_HA` y `nombre_ap`; un nombre vacío se presenta como «No informada en el archivo». La superficie es el valor del atributo original, sin recalcular ni sumar solapamientos de distintos períodos.
+
+`scripts/prepare-mining.py` convierte el shapefile geográfico WGS84 a GeoJSON de dos dimensiones, conserva sus atributos y vértices XY, y omite Z. Requiere `pyshp`. La capa se guarda en el bucket privado en `thematic/20261120/mining` y se lee en `GET /api/thematic/mining` con la sesión del portal. Para provisionarla se configura el secreto `MINING_IMPORT_TOKEN` y se carga una vez mediante `PUT /api/import-mining`; el objeto existente cierra esta ruta a nuevas escrituras. Los archivos de origen y los datos de la capa no se publican en el repositorio.
+
