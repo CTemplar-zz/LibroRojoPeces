@@ -138,7 +138,7 @@ function initMap(){
   riverLabels=L.layerGroup().addTo(map);
   markers=L.featureGroup().addTo(map);
   map.on('moveend',()=>{if(current)renderPointList();renderRivers();});
-  map.on('click',event=>{if(editState?.pick&&!locationSaving){setEditCoordinate(event.latlng.lat,event.latlng.lng);editState.pick=false;map.getContainer().style.cursor='';$('pick-location').textContent='Elegir en el mapa';$('location-msg').textContent='Ubicación propuesta. Completa el motivo y guarda el cambio.';}});
+  map.on('click',event=>{if(editState?.pick&&!locationSaving)chooseLocation(event.latlng.lat,event.latlng.lng);});
   renderDepartments();
   renderRivers();
 }
@@ -348,7 +348,7 @@ function renderMarkers(){
     const review=reviewOf(p.id);
     if(review)label.append(node('p',review.reviewer+' · '+review.reason));
     m.bindPopup(label);
-    m.on('click',()=>toggle(p));
+    m.on('click',()=>{if(editState?.pick&&!locationSaving){chooseLocation(p.y,p.x);m.closePopup();}else if(!editState&&!locationSaving)toggle(p);});
     m.addTo(markers);
   }
 }
@@ -438,6 +438,7 @@ function beginLocation(id){
   editMarker.on('dragend',()=>{const latlng=editMarker.getLatLng();setEditCoordinate(latlng.lat,latlng.lng);});
   setEditCoordinate(p.y,p.x);renderDetail();renderMarkers();map.setView([p.y,p.x],Math.max(map.getZoom(),15));$('location-editor').scrollIntoView({block:'nearest',behavior:'smooth'});
 }
+function chooseLocation(y,x){if(!editState||locationSaving)return;setEditCoordinate(y,x);editState.pick=false;map.getContainer().style.cursor='';$('pick-location').textContent='Elegir en el mapa';$('location-msg').textContent='Ubicación propuesta. Completa el motivo y guarda el cambio.';}
 function setEditCoordinate(y,x){
   $('edit-lat').value=String(y);$('edit-lon').value=String(x);
   if(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<=180&&Math.abs(y)<=90)editMarker?.setLatLng([y,x]);
@@ -575,7 +576,7 @@ for(const key of ['deforestation','fire']){
   };
 }
 $('open-history').onclick=()=>{$('all-history').showModal();loadHistory(true);};
-$('duplicate-mode').onchange=filterChanged;$('duplicate-group').onchange=filterChanged;$('database-filter').onchange=filterChanged;
+$('duplicate-mode').onchange=filterChanged;$('duplicate-group').onchange=()=>{filterChanged();if($('duplicate-group').value)fit();};$('database-filter').onchange=filterChanged;
 $('open-attributes').onclick=()=>{attributePage=0;$('attributes').showModal();renderAttributes();};
 $('close-attributes').onclick=()=>$('attributes').close();
 $('attributes-previous').onclick=()=>{attributePage--;renderAttributes();};$('attributes-next').onclick=()=>{attributePage++;renderAttributes();};
