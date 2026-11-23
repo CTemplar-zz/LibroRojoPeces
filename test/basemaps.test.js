@@ -8,7 +8,7 @@ const key='fake-test-secret';
 test('fetch nativo conserva el receptor global requerido por Workers',async()=>{
   const native=globalThis.fetch;
   try{
-    globalThis.fetch=function(){assert.equal(this,globalThis);return Promise.resolve(new Response(new Uint8Array([1]),{headers:{'content-type':'image/png'}}));};
+    globalThis.fetch=function(url,options){assert.equal(this,globalThis);assert.equal(options.redirect,'manual');return Promise.resolve(new Response(new Uint8Array([1]),{headers:{'content-type':'image/png'}}));};
     const response=await serveBasemap(new Request('https://receiver.invalid/api/basemaps/asset?u='+encodeURIComponent(service+'/tile/1/0/0.pbf')),{ARCGIS_LOCATION_API_KEY:key});
     assert.equal(response.status,200);
   }finally{globalThis.fetch=native;}

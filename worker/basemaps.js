@@ -65,7 +65,8 @@ async function basemapFetch(url,env){
   if(/^(?:i?basemaps|basemapstyles)-api\.arcgis\.com$/.test(target.hostname)){
     target.searchParams.set('token',env.ARCGIS_LOCATION_API_KEY);
   }
-  const options={headers,redirect:'error'};
+  // Workers supports manual/follow; manual also prevents credentials following redirects.
+  const options={headers,redirect:'manual'};
   // Workers requires the native fetch receiver to remain the global object.
   return env.BASEMAP_FETCH?env.BASEMAP_FETCH(target.href,options):globalThis.fetch(target.href,options);
 }
