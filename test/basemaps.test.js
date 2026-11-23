@@ -5,6 +5,14 @@ import worker from '../dist/server/index.js';
 const service='https://basemaps-api.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer';
 const sprite='https://cdn.arcgis.com/sharing/rest/content/items/3d1a30626bbc46c582f148b9252676ce/resources/sprites/sprite';
 const key='fake-test-secret';
+test('fetch nativo conserva el receptor global requerido por Workers',async()=>{
+  const native=globalThis.fetch;
+  try{
+    globalThis.fetch=function(){assert.equal(this,globalThis);return Promise.resolve(new Response(new Uint8Array([1]),{headers:{'content-type':'image/png'}}));};
+    const response=await serveBasemap(new Request('https://receiver.invalid/api/basemaps/asset?u='+encodeURIComponent(service+'/tile/1/0/0.pbf')),{ARCGIS_LOCATION_API_KEY:key});
+    assert.equal(response.status,200);
+  }finally{globalThis.fetch=native;}
+});
 function style(){return {version:8,metadata:{token:key},sources:{esri:{type:'vector',tiles:[service+'/tile/{z}/{y}/{x}.pbf?token='+key],attribution:'Esri'}},glyphs:service+'/resources/fonts/{fontstack}/{range}.pbf?token='+key,sprite:sprite+'?token='+key,layers:[]};}
 test('estilos eliminan credenciales y conservan plantillas de teselas, fuentes y sprites',()=>{
   const output=sanitizeBasemapStyle(style(),'https://portal.invalid',key);

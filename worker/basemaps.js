@@ -65,7 +65,9 @@ async function basemapFetch(url,env){
   if(/^(?:i?basemaps|basemapstyles)-api\.arcgis\.com$/.test(target.hostname)){
     target.searchParams.set('token',env.ARCGIS_LOCATION_API_KEY);
   }
-  return (env.BASEMAP_FETCH||fetch)(target.href,{headers,redirect:'error'});
+  const options={headers,redirect:'error'};
+  // Workers requires the native fetch receiver to remain the global object.
+  return env.BASEMAP_FETCH?env.BASEMAP_FETCH(target.href,options):globalThis.fetch(target.href,options);
 }
 export async function serveBasemap(request,env){
   if(!env.ARCGIS_LOCATION_API_KEY)return berror('Los mapas de ArcGIS aún no están configurados.',503);
