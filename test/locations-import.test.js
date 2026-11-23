@@ -72,3 +72,42 @@ test('movimientos conservan inicial, anterior, exclusiones y controlan ediciones
   assert.equal(excluded.status,200);
   assert.ok((await excluded.json()).locations[point.id]);
 });
+
+test('motivo de movimiento opcional, sin perder trazabilidad ni validación de coordenadas',async()=>{
+  const {go,id,point,login}=setup(),headers=await login(),route='/api/species/'+id;
+  const change={pointId:point.id,x:-68.21,y:-16.11,previousRevision:null,reviewer:'Experto'};
+  const result=await go(route+'/location',{method:'POST',headers,body:JSON.stringify(change)});
+  assert.equal(result.status,200);
+  const moved=await result.json();
+  assert.equal(moved.review.history[0].reason,'');
+  assert.deepEqual(moved.review.history[0].points[0].previous,{x:point.x,y:point.y});
+  const revision=moved.points[0].locationRevision;
+  assert.equal((await go(route+'/location',{method:'POST',headers,body:JSON.stringify({...change,previousRevision:revision,x:-68.22,reason:'x'})})).status,200);
+  assert.equal((await go(route+'/location',{method:'POST',headers,body:JSON.stringify({...change,x:300})})).status,400);
+  assert.equal((await go(route+'/location',{method:'POST',headers,body:JSON.stringify({...change,reason:'x'.repeat(1501)})})).status,400);
+});
+
+test('borrado conserva historial y ubicación, excluye vecinos y rechaza movimientos o restauraciones obsoletos',async()=>{
+  const {go,id,point,db,login,put}=setup(),headers=await login(),route='/api/species/'+id;
+  const second={...point,id:'b'.repeat(20)};
+  put('supplements/20261123/'+id,{species:id,points:[second]});
+  put('supplements/20261123/index',{species:{[id]:1},total:1});
+  assert.equal((await (await go(route,{headers})).json()).duplicates.candidates,2);
+  const change={pointId:point.id,x:point.x+.0001,y:point.y,previousRevision:null,reviewer:'Experto'};
+  const moved=await (await go(route+'/location',{method:'POST',headers,body:JSON.stringify(change)})).json();
+  const body={ids:[point.id],action:'delete',reviewer:'Experto',reason:'Duplicado confirmado'};
+  assert.equal((await go(route+'/review',{method:'POST',body:JSON.stringify(body)})).status,401);
+  const result=await go(route+'/review',{method:'POST',headers,body:JSON.stringify(body)});
+  assert.equal(result.status,200);
+  const review=await result.json();assert.equal(review.points[point.id].deleted,true);
+  assert.equal(review.history.at(-1).action,'delete');assert.equal(review.history.at(-1).points[0].x,change.x);
+  const fresh=await (await go(route,{headers})).json();assert.equal(fresh.duplicates.candidates,0);
+  assert.equal(fresh.points.filter(p=>!fresh.review.points[p.id]?.deleted).length,1);
+  const history=await (await go('/api/reviews?action=delete',{headers})).json();
+  assert.equal(history.total,1);assert.equal(history.items[0].deleted,true);
+  assert.equal(history.items[0].coordinate.x,change.x);assert.equal(history.items[0].originalCoordinate.x,point.x);
+  assert.equal((await go(route+'/location',{method:'POST',headers,body:JSON.stringify({...change,x:point.x,previousRevision:moved.points[0].locationRevision})})).status,409);
+  assert.equal((await go(route+'/review',{method:'POST',headers,body:JSON.stringify({...body,action:'restore'})})).status,409);
+  assert.equal((await go(route+'/review',{method:'POST',headers,body:JSON.stringify(body)})).status,409);
+  assert.deepEqual(JSON.parse(db.get('data/'+id).value).points,[point]);
+});

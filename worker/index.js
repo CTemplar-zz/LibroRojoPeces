@@ -163,12 +163,13 @@ async function seedSupplement(request,env,key){
 async function moveLocation(request,bucket,id){
   const body=await request.json(),{pointId:idPoint,x,y,previousRevision}=body;
   const reviewer=typeof body.reviewer==='string'?body.reviewer.trim():'',reason=typeof body.reason==='string'?body.reason.trim():'';
-  if(!pointId.test(idPoint)||!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>180||Math.abs(y)>90||reviewer.length<2||reviewer.length>100||reason.length<5||reason.length>1500||!(previousRevision===null||typeof previousRevision==='string'&&previousRevision.length<100))return errors('Indica coordenadas válidas, tu nombre y el motivo (5 a 1.500 caracteres).',400);
+  if(!pointId.test(idPoint)||!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>180||Math.abs(y)>90||reviewer.length<2||reviewer.length>100||reason.length>1500||!(previousRevision===null||typeof previousRevision==='string'&&previousRevision.length<100))return errors('Indica coordenadas válidas y tu nombre. El motivo es opcional y admite hasta 1.500 caracteres.',400);
   const data=await speciesData(bucket,id);if(!data)return errors('Especie inexistente',404);
   const original=data.points.find(p=>p.id===idPoint);if(!original)return errors('Registro de otra especie',400);
   const key='reviews/'+id;
   for(let attempt=0;attempt<5;attempt++){
     const current=await load(bucket,key),review=current?.value||emptyReview();
+    if(review.points?.[idPoint]?.deleted)return errors('Este registro fue borrado. Actualiza la especie antes de continuar.',409);
     review.locations ||= {};
     const prior=review.locations[idPoint];
     if((prior?.eventId||null)!==previousRevision)return errors('Otra persona movió este punto. Actualiza la especie y revisa su ubicación antes de guardar.',409);
@@ -220,7 +221,7 @@ async function reviewHistory(bucket,url){
   const species=url.searchParams.get('species')||'';
   const action=url.searchParams.get('action')||'exclude';
   const cursor=url.searchParams.get('cursor')||'';
-  if(species&&!speciesId.test(species)||!['exclude','restore','move','all'].includes(action))return errors('Filtro inválido',400);
+  if(species&&!speciesId.test(species)||!['exclude','restore','delete','move','all'].includes(action))return errors('Filtro inválido',400);
   let after=null;
   if(cursor){
     try{after=JSON.parse(atob(cursor));}catch{return errors('Página inválida',400);}
@@ -268,7 +269,7 @@ async function reviewHistory(bucket,url){
     const raw=data.points.get(e.pointId),position=states.get(e.species)?.locations?.[e.pointId];
     return {species:e.species,speciesName:data.name,pointId:e.pointId,eventId:e.eventId,at:e.at,action:e.action,reason:e.reason,reviewer:e.reviewer,
       coordinate,previousCoordinate:p?.previous||null,originalCoordinate:p?.original||(raw?{x:raw.x,y:raw.y}:null),currentCoordinate:raw?{x:position?.x??raw.x,y:position?.y??raw.y}:null,
-      source:p?.source||'',url:p?.url||'',excluded:!!states.get(e.species)?.points?.[e.pointId]?.excluded};
+      source:p?.source||'',url:p?.url||'',excluded:!!states.get(e.species)?.points?.[e.pointId]?.excluded,deleted:!!states.get(e.species)?.points?.[e.pointId]?.deleted};
   });
   return json({items,total:entries.length,next:filtered.length>50?btoa(JSON.stringify(entryKey(page.at(-1)))):null});
 }
@@ -276,7 +277,7 @@ async function update(request,bucket,id) {
   const {ids,action,reason,reviewer}=await request.json();
   const name=typeof reviewer==='string'?reviewer.trim():'';
   const note=typeof reason==='string'?reason.trim():'';
-  if(!Array.isArray(ids)||!ids.length||ids.length>1000||ids.some(s=>typeof s!=='string'||!pointId.test(s))||!['exclude','restore'].includes(action)||name.length<2||name.length>100||note.length<5||note.length>1500)return errors('Indica los registros, tu nombre y el motivo (5 a 1.500 caracteres).',400);
+  if(!Array.isArray(ids)||!ids.length||ids.length>1000||ids.some(s=>typeof s!=='string'||!pointId.test(s))||!['exclude','restore','delete'].includes(action)||name.length<2||name.length>100||note.length<5||note.length>1500)return errors('Indica los registros, tu nombre y el motivo (5 a 1.500 caracteres).',400);
   const data=await speciesData(bucket,id);
   if(!data)return errors('Especie inexistente',404);
   const valid=new Set(data.points.map(p=>p.id));
@@ -286,6 +287,7 @@ async function update(request,bucket,id) {
   for(let attempt=0;attempt<5;attempt++){
     const current=await load(bucket,key);
     const review=current?.value||emptyReview();
+    if(selected.some(p=>review.points[p]?.deleted))return errors('Uno de los registros ya fue borrado. Actualiza la especie antes de continuar.',409);
     const at=new Date().toISOString();
     const lookup=new Map(data.points.map(p=>[p.id,p]));
     const points=selected.map(id=>{
@@ -294,7 +296,7 @@ async function update(request,bucket,id) {
       return {id,x:location?.x??p.x,y:location?.y??p.y,source:p.source||'',url:p.url||''};
     });
     const event={id:crypto.randomUUID(),ids:selected,points,action,reviewer:name,reason:note,at};
-    for(const p of selected)review.points[p]={excluded:action==='exclude',reviewer:name,reason:note,at};
+    for(const p of selected)review.points[p]={excluded:action==='exclude',deleted:action==='delete',reviewer:name,reason:note,at};
     review.history.push(event);
     const onlyIf=current?{etagMatches:current.etag}:{etagDoesNotMatch:'*'};
     if(await bucket.put(key,JSON.stringify(review),{onlyIf}))return json(review);

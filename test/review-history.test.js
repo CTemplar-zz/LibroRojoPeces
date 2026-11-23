@@ -54,7 +54,7 @@ test('historial general protegido, paginado y compatible con revisiones anterior
   assert.equal(restored.total,1);
   assert.equal(restored.items[0].action,'restore');
   assert.equal((await (await go('/api/reviews?species='+second,{headers})).json()).total,0);
-  for(const query of ['action=delete','species=../data','cursor=invalid','cursor='+btoa('[1,2,3]')])assert.equal((await go('/api/reviews?'+query,{headers})).status,400);
+  for(const query of ['action=purge','species=../data','cursor=invalid','cursor='+btoa('[1,2,3]')])assert.equal((await go('/api/reviews?'+query,{headers})).status,400);
 });
 
 test('nuevas exclusiones conservan coordenadas, fuente y URL después de restaurar',async()=>{

@@ -29,7 +29,7 @@ export function classifyDuplicates(points,review={points:{}}){
   const locations=[],byCoordinate=new Map(),grid=new Map(),parent=[];
   for(const p of points){
     p.possibleDuplicate=false;p.duplicateGroup='';p.duplicateNeighbors=0;p.nearestDuplicateM=null;
-    if(review.points?.[p.id]?.excluded)continue;
+    if(review.points?.[p.id]?.excluded||review.points?.[p.id]?.deleted)continue;
     const key=p.x+','+p.y;
     let n=byCoordinate.get(key);
     if(n===undefined){
