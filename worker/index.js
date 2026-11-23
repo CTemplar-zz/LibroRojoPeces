@@ -1,5 +1,6 @@
 import { html } from './ui.js';
 import { classifyDuplicates } from './proximity.js';
+import { serveBasemap } from './basemaps.js';
 const enc = new TextEncoder();
 const sources = new Set(['ICTIO','AmazFish','iNaturalist','GBIF','AmazonFish v2','FishBase','Literatura','SantosMercado Pando','Peces final']);
 const headers = {'cache-control':'private, no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer','x-frame-options':'DENY'};
@@ -21,6 +22,7 @@ const pagesOrigin='https://ctemplar-zz.github.io';
 const referenceKey=/^(?:index|departments|overview|regional|g-\d{1,3}-\d{1,3})$/;
 const referenceRoute=/^\/api\/reference\/([^/]+)$/;
 const thematicRoute=/^\/api\/thematic\/(basins|mining|manifest|deforestation\.tif|fire\.tif)$/;
+const basemapRoute=/^\/api\/basemaps\/(?:style\/(?:satellite|national-geographic|relief|topographic|dark)|asset|sprite(?:@2x)?\.(?:json|png))$/;
 const thematicObject=key=>key==='mining'?'thematic/20261120/mining':'thematic/20261119/'+key;
 async function seedMining(request,env){
   if(!env.MINING_IMPORT_TOKEN||!await safeEqual(request.headers.get('authorization')||'','Bearer '+env.MINING_IMPORT_TOKEN))return errors('Acceso restringido',401);
@@ -342,6 +344,7 @@ async function handle(request,env){
       : json({ok:true},200,{'set-cookie':cookie(request,'',0)});
     if(!path.startsWith('/api/'))return errors('Ruta no encontrada',404);
     if(!await authenticated(request,env))return errors('Inicia sesión para continuar',401);
+    if(basemapRoute.test(path)&&request.method==='GET')return await serveBasemap(request,env);
     if(path==='/api/reviews'&&request.method==='GET')return await reviewHistory(env.BUCKET,url);
     const thematic=path.match(thematicRoute);
     if(thematic&&request.method==='GET')return serveThematic(request,env,thematic[1]);
@@ -375,7 +378,7 @@ export default {async fetch(request,env){
   if(!fromPages(request))return handle(request,env);
   const {pathname}=new URL(request.url);
   const reference=pathname.match(referenceRoute);
-  if(!pagesPath.test(pathname)&&!(reference&&referenceKey.test(reference[1]))&&!thematicRoute.test(pathname))return errors('Ruta no encontrada',404);
+  if(!pagesPath.test(pathname)&&!(reference&&referenceKey.test(reference[1]))&&!thematicRoute.test(pathname)&&!basemapRoute.test(pathname))return errors('Ruta no encontrada',404);
   if(request.method==='OPTIONS'){
     const method=request.headers.get('access-control-request-method');
     const requested=(request.headers.get('access-control-request-headers')||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);

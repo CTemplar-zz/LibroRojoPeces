@@ -34,7 +34,11 @@ Se publican las categorías de la lista Excel, con prioridad para la propuesta n
 
 ### Capas de referencia
 
-El mapa abre con World Imagery de Esri. La capa departamental y las líneas de OSM se leen del almacén privado `reference/v1/`. Para provisionar una copia del sitio, carga primero `departments`, `overview`, `regional` y los JSON de la cuadrícula mediante `PUT /api/import-reference/{key}`, con un secreto independiente `REFERENCE_IMPORT_TOKEN`. Carga `index` al final para cerrar la importación. El índice contiene la lista de claves de cuadrícula y los recuentos.
+El mapa abre con el satelital de ArcGIS Location Platform e incluye National Geographic, Relieve, Topográfico y Oscuro. Los estilos vectoriales y ráster se dibujan con MapLibre GL y se sincronizan con las capas de Leaflet. National Geographic combina la base física, el sombreado y las etiquetas del estilo oficial de Esri. Los estilos generales usan etiquetas en español cuando están disponibles.
+
+Configura `ARCGIS_LOCATION_API_KEY` como secreto del servidor de Sites. La interfaz nunca recibe la clave: los estilos, teselas, fuentes y sprites pasan por `/api/basemaps/`, con la sesión del portal y una lista limitada de servicios de Esri. El servidor añade la clave únicamente a las peticiones a ArcGIS. Los errores de autorización del proveedor se presentan sin cerrar la sesión del usuario. Durante un cambio de mapa se conserva el anterior hasta que el nuevo está listo. El HTML generado y el repositorio no contienen credenciales.
+
+La capa departamental y las líneas de OSM se leen del almacén privado `reference/v1/`. Para provisionar una copia del sitio, carga primero `departments`, `overview`, `regional` y los JSON de la cuadrícula mediante `PUT /api/import-reference/{key}`, con un secreto independiente `REFERENCE_IMPORT_TOKEN`. Carga `index` al final para cerrar la importación. El índice contiene la lista de claves de cuadrícula y los recuentos.
 
 ### Cuencas y frecuencia de amenazas
 
