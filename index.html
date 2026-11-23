@@ -1,6 +1,6 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8ToTSI+RI3RzlOw2AkyAqeAS+XXsM3NzoFQ4XsOJMfQ=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data: https://unpkg.com https://services.arcgisonline.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; connect-src https://unpkg.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; worker-src blob:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-IWEdHKBBvHhCM8hNAY+omNJ2asoQFAcilZfnYLeAuOQ=' https://unpkg.com; style-src 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data: https://unpkg.com https://services.arcgisonline.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; connect-src https://unpkg.com https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site; worker-src blob:; base-uri 'none'; form-action 'none'">
 <title>Libro Rojo de Peces de Bolivia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -124,7 +124,7 @@ async function changeBase(){
     const definition=await basemapDefinitions.get(id);if(sequence!==basemapSequence)return;
     const credit=node('span',definition.credits||'Esri y colaboradores');
     const attribution='<a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Powered by Esri</a> · '+credit.innerHTML;
-    const layer=L.maplibreGL({style:definition.style,attribution,maxZoom:23,interactive:false,
+    const layer=L.maplibreGL({style:definition.style,attributionControl:{customAttribution:attribution},maxZoom:23,interactive:false,
       transformRequest:url=>{
         const expected=(apiOrigin||location.origin)+'/api/basemaps/';
         if(!url.startsWith(expected))throw Error('Recurso cartográfico externo no permitido.');

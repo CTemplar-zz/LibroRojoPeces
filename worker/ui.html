@@ -124,7 +124,7 @@ async function changeBase(){
     const definition=await basemapDefinitions.get(id);if(sequence!==basemapSequence)return;
     const credit=node('span',definition.credits||'Esri y colaboradores');
     const attribution='<a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Powered by Esri</a> · '+credit.innerHTML;
-    const layer=L.maplibreGL({style:definition.style,attribution,maxZoom:23,interactive:false,
+    const layer=L.maplibreGL({style:definition.style,attributionControl:{customAttribution:attribution},maxZoom:23,interactive:false,
       transformRequest:url=>{
         const expected=(apiOrigin||location.origin)+'/api/basemaps/';
         if(!url.startsWith(expected))throw Error('Recurso cartográfico externo no permitido.');
