@@ -1,6 +1,7 @@
 import { html } from './ui.js';
+import { classifyDuplicates } from './proximity.js';
 const enc = new TextEncoder();
-const sources = new Set(['ICTIO','AmazFish','iNaturalist','GBIF','AmazonFish v2','FishBase','Literatura']);
+const sources = new Set(['ICTIO','AmazFish','iNaturalist','GBIF','AmazonFish v2','FishBase','Literatura','SantosMercado Pando','Peces final']);
 const headers = {'cache-control':'private, no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer','x-frame-options':'DENY'};
 const json = (data,status=200,extra={})=>Response.json(data,{status,headers:{...headers,...extra}});
 const hex = bytes=>Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,'0')).join('');
@@ -77,7 +78,7 @@ async function serveThematic(request,env,key){
   return new Response(obj.body,{status:206,headers:{...h,'content-range':'bytes '+offset+'-'+end+'/'+meta.size,'content-length':String(length)}});
 }
 
-const pagesPath=/^\/api\/(?:catalog|login|logout|reviews|species\/[a-z][a-z-]{2,100}(?:\/review)?)$/;
+const pagesPath=/^\/api\/(?:catalog|login|logout|reviews|species\/[a-z][a-z-]{2,100}(?:\/(?:review|location))?)$/;
 const referenceObject=key=>'reference/v1/'+key;
 const tokenPattern=/^\d+\.[a-f0-9]{32}\.[a-f0-9]{64}$/;
 const fromPages=request=>request.headers.get('origin')===pagesOrigin;
@@ -117,6 +118,69 @@ async function load(bucket,key) {
   return obj?{etag:obj.etag,value:await obj.json()}:null;
 }
 const emptyReview=()=>({points:{},history:[]});
+const supplementKey=key=>'supplements/20261123/'+key;
+async function speciesData(bucket,id){
+  const base=await load(bucket,'data/'+id);
+  if(!base)return null;
+  const manifest=await load(bucket,supplementKey('index'));
+  const added=manifest?.value.species?.[id]?await load(bucket,supplementKey(id)):null;
+  return {...base.value,species:{...base.value.species,count:base.value.points.length+(added?.value.points.length||0)},points:[...base.value.points,...(added?.value.points||[])]};
+}
+function materialize(data,review){
+  const locations=review.locations||{};
+  const points=data.points.map(p=>{
+    const moved=locations[p.id];
+    return {...p,originalX:p.x,originalY:p.y,x:moved?.x??p.x,y:moved?.y??p.y,locationRevision:moved?.eventId||null,moved:!!moved};
+  });
+  const duplicates=classifyDuplicates(points,review);
+  return {...data,points,review,duplicates};
+}
+async function seedSupplement(request,env,key){
+  if(!env.SUPPLEMENT_IMPORT_TOKEN||!await safeEqual(request.headers.get('authorization')||'','Bearer '+env.SUPPLEMENT_IMPORT_TOKEN))return errors('Acceso restringido',401);
+  if(await env.BUCKET.head(supplementKey('index')))return errors('El consolidado ya está publicado',409);
+  const raw=await request.text();if(enc.encode(raw).length>12_000_000)return errors('Archivo demasiado grande',413);
+  const data=JSON.parse(raw);
+  if(key==='index'){
+    if(!data.species||!Number.isInteger(data.total)||data.total<1||data.total>100000||!Object.keys(data.species).length||Object.entries(data.species).some(([id,n])=>!speciesId.test(id)||!Number.isInteger(n)||n<1)||Object.values(data.species).reduce((a,b)=>a+b,0)!==data.total)return errors('Manifiesto inválido',400);
+    const catalog=await load(env.BUCKET,'data/index');
+    const known=new Set((catalog?.value||[]).map(s=>s.id));
+    for(const [id,count] of Object.entries(data.species)){
+      if(!known.has(id))return errors('Especie fuera del catálogo',400);
+      const object=await load(env.BUCKET,supplementKey(id));
+      if(object?.value.points.length!==count)return errors('Hay especies pendientes de cargar',409);
+    }
+  }else{
+    if(data.species!==key||!Array.isArray(data.points)||!data.points.length||data.points.length>30000||data.points.some(p=>!pointId.test(p.id)||!sources.has(p.source)||!Number.isFinite(p.x)||!Number.isFinite(p.y)||Math.abs(p.x)>180||Math.abs(p.y)>90||!Array.isArray(p.flags))||new Set(data.points.map(p=>p.id)).size!==data.points.length)return errors('Observaciones inválidas',400);
+    const base=await load(env.BUCKET,'data/'+key);if(!base)return errors('Especie inexistente',404);
+    const existing=new Set(base.value.points.map(p=>p.id));if(data.points.some(p=>existing.has(p.id)))return errors('Identificador ya existente',409);
+  }
+  const previous=await load(env.BUCKET,supplementKey(key));
+  if(previous)return JSON.stringify(previous.value)===JSON.stringify(data)?json({stored:true,already:true}):errors('Ya existe una carga diferente',409);
+  return await env.BUCKET.put(supplementKey(key),raw,{onlyIf:{etagDoesNotMatch:'*'}})?json({stored:true}):errors('Otra carga terminó al mismo tiempo',409);
+}
+async function moveLocation(request,bucket,id){
+  const body=await request.json(),{pointId:idPoint,x,y,previousRevision}=body;
+  const reviewer=typeof body.reviewer==='string'?body.reviewer.trim():'',reason=typeof body.reason==='string'?body.reason.trim():'';
+  if(!pointId.test(idPoint)||!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>180||Math.abs(y)>90||reviewer.length<2||reviewer.length>100||reason.length<5||reason.length>1500||!(previousRevision===null||typeof previousRevision==='string'&&previousRevision.length<100))return errors('Indica coordenadas válidas, tu nombre y el motivo (5 a 1.500 caracteres).',400);
+  const data=await speciesData(bucket,id);if(!data)return errors('Especie inexistente',404);
+  const original=data.points.find(p=>p.id===idPoint);if(!original)return errors('Registro de otra especie',400);
+  const key='reviews/'+id;
+  for(let attempt=0;attempt<5;attempt++){
+    const current=await load(bucket,key),review=current?.value||emptyReview();
+    review.locations ||= {};
+    const prior=review.locations[idPoint];
+    if((prior?.eventId||null)!==previousRevision)return errors('Otra persona movió este punto. Actualiza la especie y revisa su ubicación antes de guardar.',409);
+    const from={x:prior?.x??original.x,y:prior?.y??original.y};
+    if(from.x===x&&from.y===y)return errors('La ubicación propuesta es igual a la actual.',400);
+    const at=new Date().toISOString(),eventId=crypto.randomUUID();
+    const snapshot={id:idPoint,x,y,source:original.source,url:original.url||'',previous:from,original:{x:original.x,y:original.y}};
+    review.locations[idPoint]={x,y,eventId,reviewer,reason,at};
+    review.history.push({id:eventId,ids:[idPoint],points:[snapshot],action:'move',reviewer,reason,at});
+    const onlyIf=current?{etagMatches:current.etag}:{etagDoesNotMatch:'*'};
+    if(await bucket.put(key,JSON.stringify(review),{onlyIf}))return json(materialize(data,review));
+  }
+  return errors('Otra persona guardó cambios al mismo tiempo. Intenta de nuevo.',409);
+}
 async function seed(request,env,key) {
   if(!env.IMPORT_TOKEN || !await safeEqual(request.headers.get('authorization')||'','Bearer '+env.IMPORT_TOKEN))return errors('Acceso restringido',401);
   if(await env.BUCKET.head('data/index'))return errors('La importación ya está cerrada',409);
@@ -154,7 +218,7 @@ async function reviewHistory(bucket,url){
   const species=url.searchParams.get('species')||'';
   const action=url.searchParams.get('action')||'exclude';
   const cursor=url.searchParams.get('cursor')||'';
-  if(species&&!speciesId.test(species)||!['exclude','restore','all'].includes(action))return errors('Filtro inválido',400);
+  if(species&&!speciesId.test(species)||!['exclude','restore','move','all'].includes(action))return errors('Filtro inválido',400);
   let after=null;
   if(cursor){
     try{after=JSON.parse(atob(cursor));}catch{return errors('Página inválida',400);}
@@ -175,7 +239,7 @@ async function reviewHistory(bucket,url){
     const reviews=await Promise.all(keys.slice(start,start+8).map(async key=>({species:key.slice(8),review:(await load(bucket,key))?.value})));
     for(const {species,review} of reviews){
       if(!review)continue;
-      states.set(species,review.points||{});
+      states.set(species,review);
       for(const event of review.history||[]){
         if(action!=='all'&&event.action!==action)continue;
         const points=new Map((event.points||[]).map(p=>[p.id,p]));
@@ -190,17 +254,19 @@ async function reviewHistory(bucket,url){
   entries.sort((a,b)=>-compare(entryKey(a),entryKey(b)));
   const filtered=after?entries.filter(e=>compare(entryKey(e),after)<0):entries;
   const page=filtered.slice(0,50);
-  const speciesData=new Map();
+  const historicalSpecies=new Map();
   for(const id of new Set(page.map(e=>e.species))){
-    const data=(await load(bucket,'data/'+id))?.value;
-    speciesData.set(id,{name:data?.species?.name||id,points:new Map((data?.points||[]).map(p=>[p.id,p]))});
+    const data=await speciesData(bucket,id);
+    historicalSpecies.set(id,{name:data?.species?.name||id,points:new Map((data?.points||[]).map(p=>[p.id,p]))});
   }
   const items=page.map(e=>{
-    const data=speciesData.get(e.species);
+    const data=historicalSpecies.get(e.species);
     const p=e.snapshot||data.points.get(e.pointId);
     const coordinate=p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?{x:p.x,y:p.y}:null;
+    const raw=data.points.get(e.pointId),position=states.get(e.species)?.locations?.[e.pointId];
     return {species:e.species,speciesName:data.name,pointId:e.pointId,eventId:e.eventId,at:e.at,action:e.action,reason:e.reason,reviewer:e.reviewer,
-      coordinate,source:p?.source||'',url:p?.url||'',excluded:!!states.get(e.species)?.[e.pointId]?.excluded};
+      coordinate,previousCoordinate:p?.previous||null,originalCoordinate:p?.original||(raw?{x:raw.x,y:raw.y}:null),currentCoordinate:raw?{x:position?.x??raw.x,y:position?.y??raw.y}:null,
+      source:p?.source||'',url:p?.url||'',excluded:!!states.get(e.species)?.points?.[e.pointId]?.excluded};
   });
   return json({items,total:entries.length,next:filtered.length>50?btoa(JSON.stringify(entryKey(page.at(-1)))):null});
 }
@@ -209,9 +275,9 @@ async function update(request,bucket,id) {
   const name=typeof reviewer==='string'?reviewer.trim():'';
   const note=typeof reason==='string'?reason.trim():'';
   if(!Array.isArray(ids)||!ids.length||ids.length>1000||ids.some(s=>typeof s!=='string'||!pointId.test(s))||!['exclude','restore'].includes(action)||name.length<2||name.length>100||note.length<5||note.length>1500)return errors('Indica los registros, tu nombre y el motivo (5 a 1.500 caracteres).',400);
-  const data=await load(bucket,'data/'+id);
+  const data=await speciesData(bucket,id);
   if(!data)return errors('Especie inexistente',404);
-  const valid=new Set(data.value.points.map(p=>p.id));
+  const valid=new Set(data.points.map(p=>p.id));
   const selected=[...new Set(ids)];
   if(selected.some(p=>!valid.has(p)))return errors('Hay registros de otra especie',400);
   const key='reviews/'+id;
@@ -219,10 +285,11 @@ async function update(request,bucket,id) {
     const current=await load(bucket,key);
     const review=current?.value||emptyReview();
     const at=new Date().toISOString();
-    const lookup=new Map(data.value.points.map(p=>[p.id,p]));
+    const lookup=new Map(data.points.map(p=>[p.id,p]));
     const points=selected.map(id=>{
       const p=lookup.get(id);
-      return {id,x:p.x,y:p.y,source:p.source||'',url:p.url||''};
+      const location=review.locations?.[id];
+      return {id,x:location?.x??p.x,y:location?.y??p.y,source:p.source||'',url:p.url||''};
     });
     const event={id:crypto.randomUUID(),ids:selected,points,action,reviewer:name,reason:note,at};
     for(const p of selected)review.points[p]={excluded:action==='exclude',reviewer:name,reason:note,at};
@@ -238,6 +305,8 @@ async function handle(request,env){
   const path=url.pathname;
   try {
     if(path==='/'&&request.method==='GET')return new Response(html,{headers:{...headers,'content-type':'text/html; charset=utf-8'}});
+    const supplement=path.match(/^\/api\/import-supplement\/(index|[a-z][a-z-]{2,100})$/);
+    if(supplement&&request.method==='PUT')return await seedSupplement(request,env,supplement[1]);
     if(path==='/api/import-mining'&&request.method==='PUT')return await seedMining(request,env);
     if(path.startsWith('/api/import-thematic/')&&request.method==='PUT'){
       const key=path.split('/').at(-1);
@@ -282,16 +351,17 @@ async function handle(request,env){
       return obj?new Response(obj.body,{headers:{...headers,'content-type':'application/json; charset=utf-8'}}):errors('Capa no disponible',404);
     }
     if(path==='/api/catalog'&&request.method==='GET'){
-      const obj=await env.BUCKET.get('data/index');
-      return obj?new Response(obj.body,{headers:{...headers,'content-type':'application/json; charset=utf-8'}}):errors('El catálogo se está cargando',503);
+      const [catalog,supplement]=await Promise.all([load(env.BUCKET,'data/index'),load(env.BUCKET,supplementKey('index'))]);
+      return catalog?json(catalog.value.map(s=>supplement?.value.species?.[s.id]?{...s,count:(s.count||0)+supplement.value.species[s.id]}:s)):errors('El catálogo se está cargando',503);
     }
-    const match=path.match(/^\/api\/species\/([a-z][a-z-]{2,100})(\/review)?$/);
+    const match=path.match(/^\/api\/species\/([a-z][a-z-]{2,100})(\/(?:review|location))?$/);
     if(match){
       const [,id,review]=match;
-      if(review&&request.method==='POST')return await update(request,env.BUCKET,id);
+      if(review==='/review'&&request.method==='POST')return await update(request,env.BUCKET,id);
+      if(review==='/location'&&request.method==='POST')return await moveLocation(request,env.BUCKET,id);
       if(!review&&request.method==='GET'){
-        const [data,changes]=await Promise.all([load(env.BUCKET,'data/'+id),load(env.BUCKET,'reviews/'+id)]);
-        return data?json({...data.value,review:changes?.value||emptyReview()}):errors('Especie inexistente',404);
+        const [data,changes]=await Promise.all([speciesData(env.BUCKET,id),load(env.BUCKET,'reviews/'+id)]);
+        return data?json(materialize(data,changes?.value||emptyReview())):errors('Especie inexistente',404);
       }
     }
     return errors('Ruta no encontrada',404);

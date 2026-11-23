@@ -19,15 +19,17 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 .thematic-control{position:absolute;top:94px;right:10px;z-index:500;background:#f9fcf8f5;color:var(--ink);border:1px solid #b9cbbd;border-radius:9px;padding:10px 12px;box-shadow:0 3px 12px #142a2633;max-width:270px;max-height:58%;overflow:auto;font-size:14px}
 .thematic-control>summary{font-weight:700;color:var(--ink);margin:0}.thematic-layer{border-top:1px solid var(--line);margin-top:9px;padding-top:8px}.thematic-layer label{display:flex;align-items:center;gap:5px}.thematic-layer input[type=range]{padding:0;width:110px}.thematic-layer small{font-size:12px}.thematic-legend{display:grid;gap:3px;margin-top:6px;font-size:12px}.thematic-swatch{display:inline-block;width:16px;height:10px;border:1px solid #687e7644;margin-right:5px}.thematic-opacity{font-size:12px;margin:6px 0}.thematic-status{font-size:12px;color:#9a3624;overflow-wrap:anywhere}
 .basin-label{background:transparent;border:0;box-shadow:none;color:#f5ecff;font:700 12px/1.2 "DM Sans",sans-serif;text-align:center;white-space:normal;width:150px;max-width:150px;text-shadow:-1px -1px 2px #222a40,1px 1px 2px #222a40,-1px 1px 2px #222a40,1px -1px 2px #222a40;pointer-events:none}.basin-label::before{display:none}.mining-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px}.mining-tools button{font-size:12px}
-.excluded-key{display:inline-flex;align-items:center;font-size:12px}.excluded-dot{background:#e32636;border:1px solid #971524}.review-point{padding:8px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.review-point p{margin:3px 0}.review-point button{font-size:12px}.review-state{color:#a82030;font-weight:700}
+.excluded-key{display:inline-flex;align-items:center;font-size:12px}.excluded-dot{background:#e32636;border:1px solid #971524}.review-point{padding:8px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.review-point p{margin:3px 0}.review-point button{font-size:12px;margin:4px 4px 0 0}.review-state{color:#a82030;font-weight:700}
 #all-history{width:min(920px,94vw);max-height:88dvh;overflow:auto;border:1px solid #bacbbb;border-radius:12px;padding:20px;background:var(--paper);color:var(--ink)}#all-history::backdrop{background:#09251ecc}.history-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.history-heading h2{font-size:32px}.history-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.history-filters label{display:grid;gap:5px;flex:1;min-width:180px}#all-history-list{max-height:53dvh;overflow:auto}#all-history-list article{border-bottom:1px solid var(--line);padding:12px 0;overflow-wrap:anywhere}
+
+.duplicate-dot{background:#ff9700;border:1px solid #9c4f00}.duplicate-controls>label{display:block;margin:7px 0 4px}.duplicate-controls select{width:100%}.duplicate-controls p{font-size:13px}#location-editor{border:2px solid #587f6d;border-radius:8px;padding:12px;background:#edf5ee}#location-editor input:disabled{background:#e6eae6}.location-pin{font:bold 27px/24px sans-serif;color:#092f25;text-align:center;filter:drop-shadow(0 0 2px white);cursor:move}.location-pin span{background:#e4fff0bb;border-radius:50%}#attributes{width:min(1400px,96vw);max-height:92dvh;border:1px solid #a8bcae;border-radius:12px;padding:18px;background:var(--paper);color:var(--ink)}#attributes::backdrop{background:#09251ecc}.attribute-scroll{overflow:auto;max-height:62dvh;border:1px solid var(--line)}#attribute-table{border-collapse:collapse;font-size:13px;min-width:1800px;width:100%}#attribute-table th{position:sticky;top:0;background:#e3eee4;z-index:1;text-align:left}#attribute-table th,#attribute-table td{padding:8px;border-bottom:1px solid var(--line);max-width:230px;overflow-wrap:anywhere}#attribute-table tr.duplicate-row{background:#fff0d7}#attribute-table tr.excluded-row{background:#ffe8e9}#attribute-table button{white-space:nowrap;font-size:12px;padding:5px}#attribute-table .actions{flex-wrap:nowrap}.history-heading{flex-wrap:wrap}
 @media(max-width:990px){.layout{grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(250px,280px)}header{padding:12px}.right{padding:12px}}@media(max-width:700px){#portal{height:auto;min-height:100dvh}.layout{display:flex;flex-direction:column}.left{max-height:250px;border:0}.left-head{padding:10px 12px 6px}.left h2{font-size:25px}.left input{width:52%;margin-right:5px}.left select{width:42%}.right{border:0}.map-panel{height:60dvh;min-height:370px}.right .point-list{max-height:220px}header h1{font-size:25px}}
 </style></head><body>
 <main id="login" hidden><form id="login-form" class="loginCard" method="post"><p class="muted">BOLIVIA · ICTIOFAUNA</p><h1>Libro Rojo<br>de Peces</h1><p class="muted">Geoportal de distribución y revisión de registros</p><label>Usuario<input name="user" autocomplete="username" required maxlength="128"></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button class="primary">Ingresar</button><p id="login-msg" role="status"></p></form></main>
-<main id="portal" hidden><header><div><div class="kicker">Biodiversidad de Bolivia</div><h1>Libro Rojo de Peces</h1></div><div class="actions"><button id="open-history">Historial de exclusiones</button><button id="logout">Cerrar sesión</button></div></header>
+<main id="portal" hidden><header><div><div class="kicker">Biodiversidad de Bolivia</div><h1>Libro Rojo de Peces</h1></div><div class="actions"><button id="open-history">Historial de revisiones</button><button id="logout">Cerrar sesión</button></div></header>
 <div class="layout">
 <aside class="left" aria-label="Catálogo de especies"><div class="left-head"><h2>Especies</h2><small id="species-count"></small><input id="search" type="search" placeholder="Buscar especie o familia" aria-label="Buscar especie o familia"><select id="category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select></div><div id="species-list"></div></aside>
-<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="satellite" selected>Satelital</option><option value="relief">Relieve</option><option value="topographic">Topográfico</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-departments" checked> Límites departamentales</label><label><input type="checkbox" id="show-rivers" checked> Ríos</label><span class="excluded-key"><i class="dot excluded-dot"></i>Exclusión propuesta</span></div><div id="map" aria-label="Mapa interactivo"></div><details class="thematic-control" open><summary>Capas ambientales</summary>
+<section class="map-panel" aria-label="Mapa de distribución"><div class="map-tools"><select id="basemap" aria-label="Mapa base"><option value="satellite" selected>Satelital</option><option value="relief">Relieve</option><option value="topographic">Topográfico</option><option value="dark">Oscuro</option></select><button id="fit">Ajustar a puntos</button><label><input type="checkbox" id="show-area" checked> Área UICN</label><label><input type="checkbox" id="show-departments" checked> Límites departamentales</label><label><input type="checkbox" id="show-rivers" checked> Ríos</label><span class="excluded-key"><i class="dot duplicate-dot"></i>Posible duplicado ≤100 m</span><span class="excluded-key"><i class="dot excluded-dot"></i>Exclusión propuesta</span></div><div id="map" aria-label="Mapa interactivo"></div><details class="thematic-control" open><summary>Capas ambientales</summary>
 <div class="thematic-layer"><label><input type="checkbox" id="show-basins"> Cuencas HydroSHEDS · nivel 5</label><div id="legend-basins" class="thematic-legend" hidden><span><i class="thematic-swatch" style="background:#a277d61f;border-color:#ac80ec"></i>Cuenca · 88 % de transparencia</span><small>Nombres visibles sobre el mapa. Selecciona una cuenca para consultar su código. Dos registros de origen carecen de geometría.</small></div></div>
 <div class="thematic-layer"><label><input type="checkbox" id="show-mining"> Minería ilegal</label><div id="legend-mining" class="thematic-legend" hidden><span><i class="thematic-swatch" style="background:#ffc24c66;border-color:#ffac26"></i>Áreas registradas · 2018–2025</span><small id="mining-count"></small><small>Selecciona un polígono para consultar año, período, superficie y área protegida.</small><div class="mining-tools"><button id="fit-mining" type="button">Ver extensión</button></div></div></div>
 <div class="thematic-layer"><label><input type="checkbox" id="show-deforestation"> Deforestación · 2016–2025</label><div id="legend-deforestation" hidden><label class="thematic-opacity">Opacidad <input type="range" id="opacity-deforestation" aria-label="Opacidad de deforestación" min="10" max="100" value="80"><output id="percent-deforestation">80 %</output></label><div class="thematic-legend"><span><i class="thematic-swatch" style="background:#ffd166"></i>1</span><span><i class="thematic-swatch" style="background:#f99638"></i>2</span><span><i class="thematic-swatch" style="background:#ed542d"></i>3</span><span><i class="thematic-swatch" style="background:#a51a25"></i>4</span></div></div></div>
@@ -36,17 +38,20 @@ header{background:var(--pine);color:#fafaf3;display:flex;align-items:center;just
 <aside class="right" aria-label="Observaciones y revisión">
 <div class="topline"><h2 id="species-name">Selecciona una especie</h2><span class="badge" id="species-cat"></span></div><div id="species-meta" class="note"></div><p id="status" role="status"></p>
 <div id="species-info" hidden><section class="section"><span id="total" class="total"></span><span id="total-label"></span><div id="sources"></div></section>
+<section class="section duplicate-controls"><h3>Posibles duplicados · 100 metros</h3><p id="duplicate-summary" role="status"></p><p class="note"><i class="dot duplicate-dot"></i>Naranja: registros activos de la misma especie a 100 m o menos de otro. Rojo: exclusión propuesta. La marca no confirma un duplicado.</p><label for="duplicate-mode">Filtrar registros</label><select id="duplicate-mode"><option value="all">Todos los registros</option><option value="possible">Posibles duplicados</option><option value="single">Sin coincidencias activas</option><option value="excluded">Exclusiones propuestas</option></select><label for="duplicate-group">Grupo de coincidencias</label><select id="duplicate-group"><option value="">Todos los grupos</option></select><label for="database-filter">Base de datos</label><select id="database-filter"><option value="">Todas las bases</option></select><div class="actions"><button id="open-attributes" type="button">Tabla de atributos</button><button id="export-attributes" type="button">Exportar CSV filtrado</button></div><p class="note">Los grupos conectan vecinos próximos; sus extremos pueden estar separados por más de 100 m. Las coincidencias se recalculan al mover o depurar.</p></section>
 <section class="section"><h3>Registros visibles</h3><p class="note">Selecciona puntos en el mapa o en la lista.</p><div class="actions"><button id="select-view">Seleccionar en el mapa</button><button id="clear">Limpiar selección</button></div><p id="selected-count" role="status" class="note"></p><div id="point-list" class="point-list"></div><button id="more" hidden>Ver más</button><div id="point-info" class="section note" hidden></div></section>
+<form id="location-editor" class="section review" hidden><h3>Editar ubicación</h3><p id="location-id" class="note"></p><p id="location-original" class="note"></p><p class="note">Arrastra la cruz en el mapa o escribe las coordenadas. Los cambios se aplican al guardar.</p><label for="edit-lat">Latitud (WGS84)</label><input id="edit-lat" type="number" step="any" min="-90" max="90" required><label for="edit-lon">Longitud (WGS84)</label><input id="edit-lon" type="number" step="any" min="-180" max="180" required><div class="actions"><button id="pick-location" type="button">Elegir en el mapa</button><button id="preview-location" type="button">Centrar propuesta</button><button id="original-location" type="button">Usar ubicación inicial</button></div><label for="location-reviewer">Nombre del revisor de ubicación</label><input id="location-reviewer" required minlength="2" maxlength="100"><label for="location-reason">Motivo del cambio de ubicación</label><textarea id="location-reason" required minlength="5" maxlength="1500"></textarea><div class="actions"><button id="save-location" class="primary">Guardar ubicación</button><button id="cancel-location" type="button">Cancelar</button></div><p id="location-msg" role="status"></p></form>
 <form id="review-form" class="section review"><h3>Depurar registros</h3><label for="reviewer">Nombre del revisor</label><input id="reviewer" maxlength="100" required autocomplete="name"><label for="reason">Motivo de la revisión</label><textarea id="reason" minlength="5" maxlength="1500" required placeholder="Describe el criterio aplicado"></textarea><div class="actions"><button id="exclude" value="exclude" class="primary">Proponer exclusión</button><button id="restore" value="restore">Restaurar selección</button></div><p id="review-msg" role="status"></p><details><summary id="history-title">Historial de revisión</summary><div id="history"></div></details></form>
 </div></aside></div></main>
 <dialog id="all-history" aria-labelledby="all-history-title">
-<div class="history-heading"><h2 id="all-history-title">Historial de exclusiones</h2><button id="close-history" type="button">Cerrar</button></div>
-<p class="note">Consulta las propuestas de exclusión y las restauraciones de todas las especies. Cada registro permite localizar el punto en el mapa.</p>
+<div class="history-heading"><h2 id="all-history-title">Historial de revisiones</h2><button id="close-history" type="button">Cerrar</button></div>
+<p class="note">Consulta exclusiones, restauraciones y movimientos de todas las especies. Puedes localizar la ubicación de cada revisión y consultar la inicial.</p>
 <div class="history-filters"><label>Especie<select id="history-species"><option value="">Todas las especies</option></select></label>
-<label>Acción<select id="history-action"><option value="exclude">Propuestas de exclusión</option><option value="restore">Restauraciones</option><option value="all">Todas las revisiones</option></select></label><button id="refresh-history" type="button">Actualizar</button></div>
+<label>Acción<select id="history-action"><option value="exclude">Propuestas de exclusión</option><option value="restore">Restauraciones</option><option value="move">Cambios de ubicación</option><option value="all">Todas las revisiones</option></select></label><button id="refresh-history" type="button">Actualizar</button></div>
 <p id="all-history-status" role="status"></p><div id="all-history-list"></div>
 <div class="actions"><button id="previous-history" type="button">Anterior</button><button id="next-history" type="button">Siguiente</button></div>
 </dialog>
+<dialog id="attributes" aria-labelledby="attributes-title"><div class="history-heading"><h2 id="attributes-title">Tabla de atributos</h2><button id="close-attributes" type="button">Cerrar tabla</button></div><p id="attributes-species"></p><p class="note">Se aplican los filtros de la especie y de las fuentes, sin limitar a la vista del mapa. Selecciona registros para depurarlos. POS_DUP_100 = 1 indica posible duplicado entre registros activos.</p><p id="attributes-status" role="status"></p><div class="attribute-scroll"><table id="attribute-table"><thead><tr><th>Seleccionar</th><th>Registro</th><th>Fuente</th><th>Autor</th><th>Base de datos</th><th>Año</th><th>POS_DUP_100</th><th>GRUPO_DUP</th><th>VECINOS_100</th><th>DIST_MIN_M</th><th>Estado</th><th>Latitud actual</th><th>Longitud actual</th><th>Latitud inicial</th><th>Longitud inicial</th><th>Acciones</th></tr></thead><tbody id="attribute-body"></tbody></table></div><div class="actions"><button id="attributes-previous" type="button">Página anterior</button><button id="attributes-next" type="button">Página siguiente</button><button id="attributes-review" type="button" class="primary">Revisar selección</button><button id="attributes-export" type="button">Exportar CSV filtrado</button></div></dialog>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -58,7 +63,7 @@ function rememberSession(token){
   if(token)sessionStorage.setItem(sessionKey,token);
   else sessionStorage.removeItem(sessionKey);
 }
-const palette={'ICTIO':'#237ccb','AmazFish':'#db713e','iNaturalist':'#2b9b66','GBIF':'#8954c7','AmazonFish v2':'#c08814','FishBase':'#d8467f','Literatura':'#087f8c'};
+const palette={'ICTIO':'#237ccb','AmazFish':'#1b9aa6','iNaturalist':'#2b9b66','GBIF':'#8954c7','AmazonFish v2':'#8a9b25','FishBase':'#d8467f','Literatura':'#087f8c','SantosMercado Pando':'#b65691','Peces final':'#766d4b'};
 let catalog=[], current=null, map, baselayer, areas, markers, loadSeq=0, limit=60, busy=false, lastPoint=null;
 let departmentLayer,rivers,riverLabels,referenceSeq=0,riverCredit=false;
 const referenceCache=new Map();
@@ -66,6 +71,7 @@ let basinLayer,miningLayer,observationRenderer,areaRenderer;
 const thematicVectors=new Map();
 let historyCursor=null,historyNext=null,historySequence=0;
 let historicalMarker;
+let editState=null,editMarker=null,locationSaving=false,attributePage=0;
 const historyBack=[];
 const rasterLayers=new Map(),tiffFiles=new Map();
 let rasterJobs=0;
@@ -132,6 +138,7 @@ function initMap(){
   riverLabels=L.layerGroup().addTo(map);
   markers=L.featureGroup().addTo(map);
   map.on('moveend',()=>{if(current)renderPointList();renderRivers();});
+  map.on('click',event=>{if(editState?.pick&&!locationSaving){setEditCoordinate(event.latlng.lat,event.latlng.lng);editState.pick=false;map.getContainer().style.cursor='';$('pick-location').textContent='Elegir en el mapa';$('location-msg').textContent='Ubicación propuesta. Completa el motivo y guarda el cambio.';}});
   renderDepartments();
   renderRivers();
 }
@@ -319,9 +326,9 @@ for(const option of [...historySelect.options].slice(1))option.remove();
 for(const s of catalog)historySelect.add(new Option(s.name,s.id));
 const initial=catalog.find(s=>s.id==='orestias-agassii')||catalog[0];if(initial)await openSpecies(initial.id);}
 function renderCatalog(){const q=$('search').value.trim().toLowerCase(), cat=$('category').value;const list=catalog.filter(s=>(!q||(s.name+' '+s.family).toLowerCase().includes(q))&&(!cat||s.category===cat));$('species-count').textContent=number(list.length)+' de '+number(catalog.length)+' especies';const entries=list.map(s=>{const b=node('button',null,'species'+(current?.species.id===s.id?' active':''));b.type='button';b.setAttribute('aria-pressed',String(current?.species.id===s.id));const name=node('span');name.append(node('i',s.name),node('small',' · '+number(s.count)));b.append(name,node('span',s.category,'badge '+badgeClass(s.category)));b.addEventListener('click',()=>openSpecies(s.id));return b;});$('species-list').replaceChildren(...entries);}
-async function openSpecies(id){const seq=++loadSeq;$('status').textContent='Cargando especie…';try{const v=await api('/api/species/'+id);if(seq!==loadSeq)return;current=v;selected.clear();filters.clear();Object.keys(palette).forEach(k=>filters.add(k));lastPoint=null;limit=60;$('reason').value='';$('review-msg').textContent='';$('status').textContent='';$('species-info').hidden=false;$('species-name').textContent=v.species.name;$('species-cat').className='badge '+badgeClass(v.species.category);$('species-cat').textContent=v.species.category;const s=v.species;$('species-meta').textContent=[s.family,s.proposed&&'Propuesta nacional 2026: '+s.proposed,s.national&&'Nacional 2009: '+s.national,s.globalCategory&&'Global en la lista: '+s.globalCategory,s.author&&'Primer autor: '+s.author].filter(Boolean).join(' · ');renderCatalog();renderAreas();render();fit();return v;}catch(e){if(seq!==loadSeq)return;if(e.status===401)loginScreen(e.message);else $('status').textContent=e.message;}}
+async function openSpecies(id){if(locationSaving){$('status').textContent='Espera a que termine de guardarse la ubicación.';return;}cancelLocation();const seq=++loadSeq;$('status').textContent='Cargando especie…';try{const v=await api('/api/species/'+id);if(seq!==loadSeq)return;current=v;selected.clear();filters.clear();Object.keys(palette).forEach(k=>filters.add(k));lastPoint=null;limit=60;$('duplicate-mode').value='all';$('duplicate-group').replaceChildren(new Option('Todos los grupos',''));$('database-filter').replaceChildren(new Option('Todas las bases',''));attributePage=0;$('reason').value='';$('review-msg').textContent='';$('status').textContent='';$('species-info').hidden=false;$('species-name').textContent=v.species.name;$('species-cat').className='badge '+badgeClass(v.species.category);$('species-cat').textContent=v.species.category;const s=v.species;$('species-meta').textContent=[s.family,s.proposed&&'Propuesta nacional 2026: '+s.proposed,s.national&&'Nacional 2009: '+s.national,s.globalCategory&&'Global en la lista: '+s.globalCategory,s.author&&'Primer autor: '+s.author].filter(Boolean).join(' · ');renderCatalog();renderAreas();render();fit();return v;}catch(e){if(seq!==loadSeq)return;if(e.status===401)loginScreen(e.message);else $('status').textContent=e.message;}}
 const reviewOf=id=>current?.review.points[id];
-const shown=()=>current.points.filter(p=>filters.has(p.source));
+const shown=()=>current.points.filter(p=>filters.has(p.source)&&(!$('database-filter').value||(p.database||p.source)===$('database-filter').value)&&(!$('duplicate-group').value||p.duplicateGroup===$('duplicate-group').value)&&($('duplicate-mode').value==='all'||$('duplicate-mode').value==='possible'&&p.possibleDuplicate||$('duplicate-mode').value==='single'&&!p.possibleDuplicate&&!reviewOf(p.id)?.excluded||$('duplicate-mode').value==='excluded'&&reviewOf(p.id)?.excluded));
 function fit(){if(!current)return;const pts=shown();if(pts.length){map.fitBounds(L.latLngBounds(pts.map(p=>[p.y,p.x])),{padding:[38,38],maxZoom:12});return;}if(areas.getLayers().length&&areas.getBounds().isValid()){map.fitBounds(areas.getBounds(),{padding:[20,20],maxZoom:10});return;}map.setView([-16.5,-64.7],5);}
 function renderAreas(){areas.clearLayers();if(!$('show-area').checked)return;L.geoJSON(current.areas,{pane:'areas',renderer:areaRenderer,style:f=>({color:'#16867d',weight:2,fillOpacity:.17,dashArray:f.properties.review?'5 4':null}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup(node('div','UICN · '+p.scientific+(p.category?' · '+p.category:'')+(p.review?' · Nombre para revisión':'')));}}).addTo(areas);}
 function renderMarkers(){
@@ -333,11 +340,11 @@ function renderMarkers(){
     const m=L.circleMarker([p.y,p.x],{
       renderer:observationRenderer,
       radius:chosen||focused?8:excluded?6:5,
-      color:chosen?'#142f25':excluded?'#971524':focused?'#142f25':'#ffffff',
-      weight:chosen||focused||excluded?2:1,fillColor:excluded?'#e32636':palette[p.source]||'#777',fillOpacity:.9,opacity:1
+      color:chosen?'#142f25':excluded?'#971524':p.possibleDuplicate?'#9c4f00':focused?'#142f25':'#ffffff',
+      weight:chosen||focused||excluded?2:1,fillColor:excluded?'#e32636':p.possibleDuplicate?'#ff9700':palette[p.source]||'#777',fillOpacity:.9,opacity:1
     });
     const label=node('div');
-    label.append(node('strong',p.source+(excluded?' · Exclusión propuesta':'')),node('p','Lat. '+p.y.toFixed(6)+' · Lon. '+p.x.toFixed(6)));
+    label.append(node('strong',p.source+(excluded?' · Exclusión propuesta':p.possibleDuplicate?' · Posible duplicado ≤100 m':'')),node('p','Lat. '+p.y.toFixed(6)+' · Lon. '+p.x.toFixed(6)));
     const review=reviewOf(p.id);
     if(review)label.append(node('p',review.reviewer+' · '+review.reason));
     m.bindPopup(label);
@@ -345,21 +352,125 @@ function renderMarkers(){
     m.addTo(markers);
   }
 }
-function toggle(p){if(selected.has(p.id))selected.delete(p.id);else selected.add(p.id);lastPoint=p;renderMarkers();renderPointList();renderDetail();}
-function renderSources(){const active=current.points.filter(p=>!reviewOf(p.id)?.excluded);const rows=Object.entries(palette).map(([s,color])=>{const orig=current.points.filter(p=>p.source===s).length;if(!orig)return null;const act=active.filter(p=>p.source===s).length;const r=node('div',null,'source');const l=node('label');const input=node('input');input.type='checkbox';input.checked=filters.has(s);input.addEventListener('change',()=>{if(input.checked)filters.add(s);else{filters.delete(s);for(const p of current.points)if(p.source===s)selected.delete(p.id);}renderMarkers();renderPointList();});const dot=node('span',null,'dot');dot.style.background=color;l.append(input,dot,node('span',s));r.append(l,node('strong',number(act)+(act===orig?'':' / '+number(orig))));return r;}).filter(Boolean);$('sources').replaceChildren(...rows);$('total').textContent=number(active.length);$('total-label').textContent='activos de '+number(current.points.length)+' registros';}
-function renderPointList(){const pts=shown().filter(p=>map.getBounds().contains([p.y,p.x]));$('selected-count').textContent=number(selected.size)+' seleccionados · '+number(pts.length)+' en la vista';$('exclude').disabled=busy||selected.size===0;$('restore').disabled=busy||selected.size===0;const entries=pts.slice(0,limit).map(p=>{const row=node('div',null,'point'),c=node('input');const id=p.id;c.type='checkbox';c.checked=selected.has(id);c.setAttribute('aria-label','Seleccionar registro '+id);c.addEventListener('change',()=>toggle(p));const b=node('button');b.type='button';b.append(node('span',p.source+(reviewOf(id)?.excluded?' · Exclusión propuesta':'')),node('small',[p.date,p.quality,p.type].filter(Boolean).join(' · ')||p.y.toFixed(5)+', '+p.x.toFixed(5)));b.addEventListener('click',()=>{lastPoint=p;renderDetail();renderMarkers();map.panTo([p.y,p.x]);});row.append(c,b);return row;});$('point-list').replaceChildren(...(entries.length?entries:[node('p','Sin registros en esta vista.','note')]));$('more').hidden=limit>=pts.length;}
-function renderDetail(){const elem=$('point-info');elem.replaceChildren();elem.hidden=!lastPoint;if(!lastPoint)return;const p=lastPoint;elem.append(node('strong',p.source+' · '+p.id),node('span','Lat. '+p.y.toFixed(6)+' · Lon. '+p.x.toFixed(6)));if(p.date)elem.append(node('span','Fecha: '+p.date));if(p.precision!=null)elem.append(node('span','Precisión indicada: '+p.precision+' m'));if(p.catalog)elem.append(node('span','Catálogo: '+p.catalog));if(p.flags.length)elem.append(node('span',p.flags.join(' · ')));if(p.detail)elem.append(node('span',p.detail));if(/^https?:\/\//i.test(p.url)){const a=node('a','Abrir registro de origen ↗');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';elem.append(a);}const r=reviewOf(p.id);if(r)elem.append(node('span',(r.excluded?'Exclusión propuesta':'Restaurado')+' por '+r.reviewer+' · '+r.reason));}
+function toggle(p){if(selected.has(p.id))selected.delete(p.id);else selected.add(p.id);lastPoint=p;renderMarkers();renderPointList();renderDetail();if($('attributes').open)renderAttributes();}
+function renderSources(){const active=current.points.filter(p=>!reviewOf(p.id)?.excluded);const rows=Object.entries(palette).map(([s,color])=>{const orig=current.points.filter(p=>p.source===s).length;if(!orig)return null;const act=active.filter(p=>p.source===s).length;const r=node('div',null,'source');const l=node('label');const input=node('input');input.type='checkbox';input.checked=filters.has(s);input.addEventListener('change',()=>{if(input.checked)filters.add(s);else{filters.delete(s);for(const p of current.points)if(p.source===s)selected.delete(p.id);}renderMarkers();renderPointList();if($('attributes').open)renderAttributes();});const dot=node('span',null,'dot');dot.style.background=color;l.append(input,dot,node('span',s));r.append(l,node('strong',number(act)+(act===orig?'':' / '+number(orig))));return r;}).filter(Boolean);$('sources').replaceChildren(...rows);$('total').textContent=number(active.length);$('total-label').textContent='activos de '+number(current.points.length)+' registros';}
+function renderPointList(){const pts=shown().filter(p=>map.getBounds().contains([p.y,p.x]));$('selected-count').textContent=number(selected.size)+' seleccionados · '+number(pts.length)+' en la vista';$('exclude').disabled=busy||locationSaving||selected.size===0;$('restore').disabled=busy||locationSaving||selected.size===0;const entries=pts.slice(0,limit).map(p=>{const row=node('div',null,'point'),c=node('input');const id=p.id;c.type='checkbox';c.checked=selected.has(id);c.setAttribute('aria-label','Seleccionar registro '+id);c.addEventListener('change',()=>toggle(p));const b=node('button');b.type='button';b.append(node('span',p.source+(reviewOf(id)?.excluded?' · Exclusión propuesta':p.possibleDuplicate?' · Posible duplicado':'')),node('small',[p.date,p.quality,p.type].filter(Boolean).join(' · ')||p.y.toFixed(5)+', '+p.x.toFixed(5)));b.addEventListener('click',()=>{lastPoint=p;renderDetail();renderMarkers();map.panTo([p.y,p.x]);});row.append(c,b);return row;});$('point-list').replaceChildren(...(entries.length?entries:[node('p','Sin registros en esta vista.','note')]));$('more').hidden=limit>=pts.length;}
+function renderDetail(){
+  const elem=$('point-info');elem.replaceChildren();elem.hidden=!lastPoint;if(!lastPoint)return;
+  const p=lastPoint;
+  elem.append(node('strong',p.source+' · '+p.id),node('span','Ubicación actual: '+p.y.toFixed(7)+', '+p.x.toFixed(7)),node('span','Ubicación inicial: '+p.originalY.toFixed(7)+', '+p.originalX.toFixed(7)));
+  if(p.author)elem.append(node('span','Autor / fuente: '+p.author));
+  elem.append(node('span','Base de datos: '+(p.database||p.source)));
+  if(p.date)elem.append(node('span','Fecha / año de observación: '+p.date));
+  if(p.publicationYear)elem.append(node('span','Año de publicación: '+p.publicationYear));
+  if(p.locality)elem.append(node('span','Localidad: '+p.locality));
+  if(p.precision!=null)elem.append(node('span','Precisión indicada: '+p.precision+' m'));
+  if(p.catalog)elem.append(node('span','Identificador de origen: '+p.catalog));
+  if(p.sourceSheet)elem.append(node('span','Hoja '+p.sourceSheet+' · fila '+p.sourceRow));
+  if(p.flags?.length)elem.append(node('span',p.flags.join(' · ')));
+  if(p.detail)elem.append(node('span',p.detail));
+  if(p.possibleDuplicate){
+    elem.append(node('strong','POS_DUP_100 = 1 · '+p.duplicateNeighbors+' vecino(s) activos'),node('span','Grupo '+p.duplicateGroup+' · vecino más cercano: '+p.nearestDuplicateM+' m'));
+    const compare=node('button','Comparar grupo');compare.type='button';compare.onclick=()=>{
+      Object.keys(palette).forEach(s=>filters.add(s));$('database-filter').value='';$('duplicate-mode').value='possible';$('duplicate-group').value=p.duplicateGroup;attributePage=0;render();fit();$('attributes').showModal();renderAttributes();
+    };elem.append(compare);
+  }else elem.append(node('span','POS_DUP_100 = 0'));
+  const actions=node('div',null,'actions'),edit=node('button','Editar ubicación'),initial=node('button','Ver ubicación inicial');
+  edit.type=initial.type='button';edit.onclick=()=>beginLocation(p.id);initial.onclick=()=>locateHistoryPoint({species:current.species.id,pointId:p.id,coordinate:{x:p.originalX,y:p.originalY}});
+  actions.append(edit,initial);elem.append(actions);
+  if(p.reference){const details=node('details');details.append(node('summary','Referencia completa'),node('p',p.reference));elem.append(details);}
+  if(/^https?:\/\//i.test(p.url)){const a=node('a','Abrir registro de origen');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';elem.append(a);}
+  const r=reviewOf(p.id);if(r)elem.append(node('span',(r.excluded?'Exclusión propuesta':'Restaurado')+' por '+r.reviewer+' · '+r.reason));
+  const moved=current.review.locations?.[p.id];if(moved)elem.append(node('span','Último movimiento: '+reviewDate(moved.at)+' · '+moved.reviewer+' · '+moved.reason));
+}
+function actionLabel(action){return action==='move'?'Movió la ubicación':action==='exclude'?'Propuso excluir':'Restauró';}
+function renderDuplicateOptions(){
+  const groups=new Map();for(const p of current.points)if(p.possibleDuplicate)groups.set(p.duplicateGroup,(groups.get(p.duplicateGroup)||0)+1);
+  const select=$('duplicate-group'),prior=select.value;select.replaceChildren(new Option('Todos los grupos',''));
+  for(const [id,count] of [...groups].sort())select.add(new Option(id+' · '+number(count)+' registros',id));
+  if(groups.has(prior))select.value=prior;
+  const bases=$('database-filter'),before=bases.value,databases=[...new Set(current.points.map(p=>p.database||p.source))].sort();
+  bases.replaceChildren(new Option('Todas las bases',''));for(const name of databases)bases.add(new Option(name,name));
+  if(databases.includes(before))bases.value=before;
+  $('duplicate-summary').textContent=number(current.duplicates?.candidates||0)+' candidatos en '+number(current.duplicates?.groups||0)+' grupos';
+}
+function filterChanged(){attributePage=0;limit=60;renderMarkers();renderPointList();if($('attributes').open)renderAttributes();}
+function pointYear(p){if(p.year!=null)return p.year;const years=[...new Set(String(p.date||'').match(/\b(?:18|19|20)\d{2}\b/g)||[])];return years.length===1?years[0]:'';}
+function renderAttributes(){
+  if(!current)return;
+  const points=shown(),size=100,pages=Math.max(1,Math.ceil(points.length/size));attributePage=Math.min(attributePage,pages-1);
+  $('attributes-species').textContent=current.species.name;
+  $('attributes-status').textContent=number(points.length)+' registros filtrados · '+number(selected.size)+' seleccionados · página '+number(attributePage+1)+' de '+number(pages);
+  const rows=points.slice(attributePage*size,(attributePage+1)*size).map(p=>{
+    const excluded=!!reviewOf(p.id)?.excluded,tr=node('tr',null,excluded?'excluded-row':p.possibleDuplicate?'duplicate-row':'');
+    const pick=node('input');pick.type='checkbox';pick.checked=selected.has(p.id);pick.setAttribute('aria-label','Seleccionar en tabla '+p.id);
+    pick.onchange=()=>toggle(p);const first=node('td');first.append(pick);tr.append(first);
+    const values=[p.catalog||p.id,p.source,p.author||'',p.database||p.source,pointYear(p),p.possibleDuplicate?1:0,p.duplicateGroup,p.duplicateNeighbors,p.nearestDuplicateM??'',excluded?'Exclusión propuesta':'Activo',p.y.toFixed(7),p.x.toFixed(7),p.originalY.toFixed(7),p.originalX.toFixed(7)];
+    for(const value of values)tr.append(node('td',String(value)));
+    const td=node('td'),actions=node('div',null,'actions'),view=node('button','Ver punto'),edit=node('button','Mover');
+    view.type=edit.type='button';view.onclick=()=>{$('attributes').close();lastPoint=p;renderDetail();renderMarkers();map.setView([p.y,p.x],Math.max(map.getZoom(),15));};
+    edit.onclick=()=>{$('attributes').close();beginLocation(p.id);};actions.append(view,edit);td.append(actions);tr.append(td);return tr;
+  });
+  $('attribute-body').replaceChildren(...rows);$('attributes-previous').disabled=attributePage===0;$('attributes-next').disabled=attributePage>=pages-1;
+  $('attributes-review').disabled=!selected.size;
+}
+function exportAttributes(){
+  if(!current)return;
+  const rows=[['ID','ESPECIE','FUENTE','AUTOR','BASE_DAT','ANIO','ANIO_PUB','POS_DUP_100','GRUPO_DUP','VECINOS_100','DIST_MIN_M','EXCLUIDO','LAT_ACTUAL','LON_ACTUAL','LAT_INICIAL','LON_INICIAL','MOVIDO','URL','ID_ORIG','HOJA_ORIG','FILA_ORIG']];
+  for(const p of shown())rows.push([p.id,current.species.name,p.source,p.author||'',p.database||p.source,pointYear(p),p.publicationYear??'',p.possibleDuplicate?1:0,p.duplicateGroup,p.duplicateNeighbors,p.nearestDuplicateM??'',reviewOf(p.id)?.excluded?1:0,p.y,p.x,p.originalY,p.originalX,p.moved?1:0,p.url||'',p.catalog||'',p.sourceSheet||'',p.sourceRow||'']);
+  const quote=value=>{const safe=typeof value==='string'&&/^[=+\-@]/.test(value)?"'"+value:value;return '"'+String(safe).replaceAll('"','""')+'"';};
+  const url=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  const a=node('a');a.href=url;a.download=current.species.id+'-registros-filtrados.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function cancelLocation(force=false){
+  if(locationSaving&&!force)return;
+  editMarker?.remove();editMarker=null;editState=null;$('location-editor').hidden=true;
+  if(map)map.getContainer().style.cursor='';
+}
+function beginLocation(id){
+  if(busy||locationSaving)return;
+  const p=current.points.find(p=>p.id===id);if(!p)return;cancelLocation();lastPoint=p;$('status').textContent='';
+  editState={species:current.species.id,id:p.id,revision:p.locationRevision,pick:false};
+  $('location-editor').hidden=false;$('location-id').textContent=current.species.name+' · '+p.id;
+  $('location-original').textContent='Ubicación inicial: '+p.originalY.toFixed(7)+', '+p.originalX.toFixed(7);
+  $('location-reviewer').value=$('reviewer').value;$('location-reason').value='';$('location-msg').textContent='';$('pick-location').textContent='Elegir en el mapa';
+  editMarker=L.marker([p.y,p.x],{draggable:true,zIndexOffset:1000,title:'Arrastra la ubicación propuesta',alt:'Ubicación propuesta',icon:L.divIcon({className:'location-pin',html:'<span>✚</span>',iconSize:[26,26],iconAnchor:[13,13]})}).addTo(map);
+  editMarker.on('dragend',()=>{const latlng=editMarker.getLatLng();setEditCoordinate(latlng.lat,latlng.lng);});
+  setEditCoordinate(p.y,p.x);renderDetail();renderMarkers();map.setView([p.y,p.x],Math.max(map.getZoom(),15));$('location-editor').scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function setEditCoordinate(y,x){
+  $('edit-lat').value=String(y);$('edit-lon').value=String(x);
+  if(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<=180&&Math.abs(y)<=90)editMarker?.setLatLng([y,x]);
+}
+function setLocationSaving(value){
+  locationSaving=value;for(const input of $('location-editor').querySelectorAll('input,textarea,button'))input.disabled=value;
+  if(value)editMarker?.dragging.disable();else editMarker?.dragging.enable();renderPointList();
+}
+async function saveLocation(event){
+  event.preventDefault();if(!editState||locationSaving)return;
+  const draft={...editState},x=$('edit-lon').valueAsNumber,y=$('edit-lat').valueAsNumber;
+  if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>180||Math.abs(y)>90){$('location-msg').textContent='Indica coordenadas válidas en grados decimales.';return;}
+  setLocationSaving(true);$('location-msg').textContent='Guardando ubicación…';
+  try{
+    const data=await post('/api/species/'+draft.species+'/location',{pointId:draft.id,x,y,previousRevision:draft.revision,reviewer:$('location-reviewer').value,reason:$('location-reason').value});
+    $('reviewer').value=$('location-reviewer').value;setLocationSaving(false);cancelLocation(true);
+    if(current.species.id!==draft.species)return;
+    current=data;$('status').textContent='';lastPoint=current.points.find(p=>p.id===draft.id);renderDuplicateOptions();if(!shown().some(p=>p.id===draft.id)){$('duplicate-mode').value='all';$('duplicate-group').value='';$('database-filter').value='';filters.add(lastPoint.source);}render();map.setView([lastPoint.y,lastPoint.x],Math.max(map.getZoom(),15));$('review-msg').textContent='Ubicación guardada. La ubicación inicial y la anterior permanecen en el historial.';
+  }catch(error){$('location-msg').textContent=error.message;if(error.status===401)loginScreen(error.message);}
+  finally{setLocationSaving(false);}
+}
 function renderHistory(){
   const history=current.review.history;
   $('history-title').textContent='Historial de la especie ('+history.length+')';
   const points=new Map(current.points.map(p=>[p.id,p]));
   $('history').replaceChildren(...history.slice().reverse().map(h=>{
     const card=node('details',null,'history');
-    card.append(node('summary',reviewDate(h.at)+' · '+h.reviewer+' · '+(h.action==='exclude'?'Propuso excluir':'Restauró')+' '+number(h.ids.length)),node('p',h.reason));
+    card.append(node('summary',reviewDate(h.at)+' · '+h.reviewer+' · '+actionLabel(h.action)+' '+number(h.ids.length)),node('p',h.reason));
     const snapshots=new Map((h.points||[]).map(p=>[p.id,p]));
     for(const id of h.ids){
-      const p=snapshots.get(id)||points.get(id);
-      card.append(historyPoint({species:current.species.id,pointId:id,coordinate:p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?{x:p.x,y:p.y}:null,source:p?.source||'',url:p?.url||'',excluded:!!reviewOf(id)?.excluded}));
+      const base=points.get(id),snapshot=snapshots.get(id);
+      const p=snapshot||(base?{...base,x:base.originalX,y:base.originalY}:null);
+      card.append(historyPoint({species:current.species.id,pointId:id,coordinate:p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?{x:p.x,y:p.y}:null,source:p?.source||'',url:p?.url||'',currentCoordinate:base?{x:base.x,y:base.y}:null,previousCoordinate:p?.previous||null,originalCoordinate:p?.original||(points.get(id)?{x:points.get(id).originalX,y:points.get(id).originalY}:null),excluded:!!reviewOf(id)?.excluded}));
     }
     return card;
   }));
@@ -378,6 +489,10 @@ function historyPoint(entry){
     button.onclick=()=>locateHistoryPoint(entry);
     row.append(button);
   }else row.append(node('p','Coordenadas no disponibles para este registro.','note'));
+  for(const [key,label] of [['previousCoordinate','Ver ubicación anterior'],['originalCoordinate','Ver ubicación inicial'],['currentCoordinate','Ver ubicación actual']]){
+    if(!entry[key])continue;
+    const button=node('button',label);button.type='button';button.onclick=()=>locateHistoryPoint({...entry,coordinate:entry[key]});row.append(button);
+  }
   if(/^https?:\/\//i.test(entry.url)){
     const link=node('a','Consultar fuente');
     link.href=entry.url;link.target='_blank';link.rel='noopener noreferrer';
@@ -396,8 +511,8 @@ async function locateHistoryPoint(entry){
   if(!point||point.x!==entry.coordinate.x||point.y!==entry.coordinate.y){
     const label=node('div');
     label.append(node('strong','Ubicación guardada en el historial'),node('p','Registro '+entry.pointId),node('p','Lat. '+entry.coordinate.y.toFixed(6)+' · Lon. '+entry.coordinate.x.toFixed(6)));
-    historicalMarker=L.circleMarker([entry.coordinate.y,entry.coordinate.x],{renderer:observationRenderer,radius:9,color:'#971524',weight:3,fillColor:'#e32636',fillOpacity:.9}).addTo(map).bindPopup(label).openPopup();
-    $('status').textContent='Se muestra en rojo la ubicación guardada al realizar la revisión.';
+    historicalMarker=L.circleMarker([entry.coordinate.y,entry.coordinate.x],{renderer:observationRenderer,radius:9,color:'#334155',weight:3,dashArray:'4 3',fillColor:'#ffffff',fillOpacity:.9}).addTo(map).bindPopup(label).openPopup();
+    $('status').textContent='El contorno discontinuo señala la ubicación histórica consultada.';
   }
   map.setView([entry.coordinate.y,entry.coordinate.x],Math.max(map.getZoom(),13));
   map.invalidateSize();
@@ -427,7 +542,7 @@ async function loadHistory(reset=false){
     $('all-history-status').textContent=number(page.total)+(page.total===1?' registro':' registros')+' en el historial · página '+number(historyBack.length+1);
     const cards=page.items.map(e=>{
       const card=node('article');
-      card.append(node('strong',e.speciesName),node('p',reviewDate(e.at)+' · '+e.reviewer+' · '+(e.action==='exclude'?'Propuso excluir':'Restauró'),'note'),node('p',e.reason),historyPoint(e));
+      card.append(node('strong',e.speciesName),node('p',reviewDate(e.at)+' · '+e.reviewer+' · '+actionLabel(e.action),'note'),node('p',e.reason),historyPoint(e));
       return card;
     });
     $('all-history-list').replaceChildren(...(cards.length?cards:[node('p','No hay revisiones que coincidan con estos filtros.')]));
@@ -437,7 +552,7 @@ async function loadHistory(reset=false){
     if(e.status===401){$('all-history').close();loginScreen(e.message);}
   }finally{if(sequence===historySequence)historyControls();}
 }
-function render(){renderSources();renderMarkers();renderPointList();renderDetail();renderHistory();}
+function render(){renderDuplicateOptions();renderSources();renderMarkers();renderPointList();renderDetail();renderHistory();if($('attributes').open)renderAttributes();}
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;const b=form.querySelector('button');b.disabled=true;try{const login=await post('/api/login',Object.fromEntries(new FormData(form)));if(apiOrigin)rememberSession(login.token);form.reset();await start();}catch(err){$('login-msg').textContent=err.message;}finally{b.disabled=false;}});
 $('logout').onclick=async()=>{
   if(apiOrigin)rememberSession(null);
@@ -460,6 +575,17 @@ for(const key of ['deforestation','fire']){
   };
 }
 $('open-history').onclick=()=>{$('all-history').showModal();loadHistory(true);};
+$('duplicate-mode').onchange=filterChanged;$('duplicate-group').onchange=filterChanged;$('database-filter').onchange=filterChanged;
+$('open-attributes').onclick=()=>{attributePage=0;$('attributes').showModal();renderAttributes();};
+$('close-attributes').onclick=()=>$('attributes').close();
+$('attributes-previous').onclick=()=>{attributePage--;renderAttributes();};$('attributes-next').onclick=()=>{attributePage++;renderAttributes();};
+$('attributes-review').onclick=()=>{$('attributes').close();$('review-form').scrollIntoView({block:'center',behavior:'smooth'});$('reason').focus();};
+$('export-attributes').onclick=$('attributes-export').onclick=exportAttributes;
+$('cancel-location').onclick=()=>cancelLocation();$('location-editor').onsubmit=saveLocation;
+for(const id of ['edit-lat','edit-lon'])$(id).oninput=()=>{const x=$('edit-lon').valueAsNumber,y=$('edit-lat').valueAsNumber;if(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<=180&&Math.abs(y)<=90)editMarker?.setLatLng([y,x]);};
+$('pick-location').onclick=()=>{if(!editState)return;editState.pick=!editState.pick;$('pick-location').textContent=editState.pick?'Cancelar elección en mapa':'Elegir en el mapa';map.getContainer().style.cursor=editState.pick?'crosshair':'';$('location-msg').textContent=editState.pick?'Haz clic en el mapa para proponer la nueva ubicación.':'';};
+$('preview-location').onclick=()=>{if(editMarker)map.setView(editMarker.getLatLng(),Math.max(map.getZoom(),15));};
+$('original-location').onclick=()=>{if(!editState)return;const p=current.points.find(p=>p.id===editState.id);setEditCoordinate(p.originalY,p.originalX);map.setView([p.originalY,p.originalX],Math.max(map.getZoom(),15));};
 $('close-history').onclick=()=>$('all-history').close();
 $('history-species').onchange=()=>loadHistory(true);
 $('history-action').onchange=()=>loadHistory(true);
@@ -469,7 +595,7 @@ $('previous-history').onclick=()=>{if(!historyBack.length)return;historyCursor=h
 $('select-view').onclick=()=>{for(const p of shown())if(map.getBounds().contains([p.y,p.x]))selected.add(p.id);renderMarkers();renderPointList();};
 $('clear').onclick=()=>{selected.clear();renderMarkers();renderPointList();};
 $('more').onclick=()=>{limit+=60;renderPointList();};
-$('review-form').onsubmit=async e=>{e.preventDefault();if(!selected.size||busy)return;const id=current.species.id, ids=[...selected], action=e.submitter.value;busy=true;renderPointList();try{let next;for(let i=0;i<ids.length;i+=1000)next=await post('/api/species/'+id+'/review',{ids:ids.slice(i,i+1000),action,reviewer:$('reviewer').value,reason:$('reason').value});if(current.species.id===id){current.review=next;selected.clear();$('reason').value='';$('review-msg').textContent='Revisión guardada.';render();}}catch(err){if(err.status===401)loginScreen(err.message);else $('review-msg').textContent=err.message;}finally{busy=false;if(current)renderPointList();}};
+$('review-form').onsubmit=async e=>{e.preventDefault();if(!selected.size||busy)return;const id=current.species.id, ids=[...selected], action=e.submitter.value;busy=true;renderPointList();try{let next;for(let i=0;i<ids.length;i+=1000)next=await post('/api/species/'+id+'/review',{ids:ids.slice(i,i+1000),action,reviewer:$('reviewer').value,reason:$('reason').value});if(current.species.id===id){const fresh=await api('/api/species/'+id);if(current.species.id!==id)return;current=fresh;lastPoint=lastPoint?current.points.find(p=>p.id===lastPoint.id)||null:null;selected.clear();$('reason').value='';$('review-msg').textContent='Revisión guardada.';render();}}catch(err){if(err.status===401)loginScreen(err.message);else $('review-msg').textContent=err.message;}finally{busy=false;if(current)renderPointList();}};
 start().catch(e=>loginScreen(e.status===401?'':e.message));
 </script></body></html>
 

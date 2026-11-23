@@ -5,7 +5,8 @@ await fs.mkdir('dist/server',{recursive:true});
 await fs.mkdir('dist/.openai',{recursive:true});
 await fs.copyFile('.openai/hosting.json','dist/.openai/hosting.json');
 const worker=await fs.readFile('worker/index.js','utf8');
-await fs.writeFile('dist/server/index.js',worker.replace("import { html } from './ui.js';",()=> 'const html = '+JSON.stringify(html)+';'));
+const proximity=(await fs.readFile('worker/proximity.js','utf8')).replaceAll('export function ','function ');
+await fs.writeFile('dist/server/index.js',worker.replace("import { html } from './ui.js';",()=> 'const html = '+JSON.stringify(html)+';').replace("import { classifyDuplicates } from './proximity.js';",()=>proximity));
 
 if(process.argv.includes('--pages')||process.argv.includes('--check-pages')){
   const portal='https://libro-rojo-peces-bolivia.ctemplar.chatgpt.site';
