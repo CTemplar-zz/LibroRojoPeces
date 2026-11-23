@@ -70,6 +70,7 @@ async function basemapFetch(url,env){
 export async function serveBasemap(request,env){
   if(!env.ARCGIS_LOCATION_API_KEY)return berror('Los mapas de ArcGIS aún no están configurados.',503);
   const url=new URL(request.url),match=url.pathname.match(/^\/api\/basemaps\/style\/(satellite|national-geographic|relief|topographic|dark)$/);
+  let stage='request',remoteStatus=null,remoteType=null;
   try{
     if(match){
       const id=match[1],cacheKey=url.origin+'|'+id,cached=basemapCache.get(cacheKey);
@@ -77,7 +78,10 @@ export async function serveBasemap(request,env){
       const remote=id==='national-geographic'
         ?'https://www.arcgis.com/sharing/rest/content/items/'+nationalItem+'/resources/styles/root.json'
         :'https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/'+basemapStylePaths[id]+'?language=es';
-      const response=await basemapFetch(remote,env),input=await response.json();
+      stage='style-fetch';
+      const response=await basemapFetch(remote,env);
+      remoteStatus=response.status;remoteType=response.headers.get('content-type');stage='style-json';
+      const input=await response.json();
       if(!response.ok||input.error)return berror('ArcGIS no autorizó el mapa base. Verifica la clave y sus permisos.');
       if(id==='national-geographic'){
         input.sources.nationalRelief={type:'raster',tiles:['https://ibasemaps-api.arcgis.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:23,attribution:'Esri, Airbus DS, USGS, NGA, NASA, CGIAR and the GIS user community'};
@@ -85,6 +89,7 @@ export async function serveBasemap(request,env){
         input.sources.esri.attribution='Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors and the GIS User Community';
         input.layers.unshift({id:'national-relief',type:'raster',source:'nationalRelief',minzoom:8},{id:'national-physical-base',type:'raster',source:'nationalBase',maxzoom:10});
       }
+      stage='style-sanitize';
       const data={id,...sanitizeBasemapStyle(input,url.origin,env.ARCGIS_LOCATION_API_KEY)};
       basemapCache.set(cacheKey,{data,until:Date.now()+600_000});
       return Response.json(data,{headers:bheaders});
@@ -108,5 +113,9 @@ export async function serveBasemap(request,env){
       if(new TextDecoder().decode(bytes).includes(env.ARCGIS_LOCATION_API_KEY))return berror('Respuesta inesperada de ArcGIS.');
     }
     return new Response(bytes,{headers:{...bheaders,'cache-control':'private, max-age=3600','content-type':type}});
-  }catch{return berror('No se pudo cargar el mapa base de ArcGIS. Intenta de nuevo.');}
+  }catch(error){
+    const known=new Set(['Invalid basemap style','Unrecognized basemap resource','Missing basemap tiles','Unstripped access token']);
+    console.warn('ArcGIS basemap failure',JSON.stringify({stage,remoteStatus,remoteType,cause:known.has(error.message)?error.message:error.name}));
+    return berror('No se pudo cargar el mapa base de ArcGIS. Intenta de nuevo.');
+  }
 }
